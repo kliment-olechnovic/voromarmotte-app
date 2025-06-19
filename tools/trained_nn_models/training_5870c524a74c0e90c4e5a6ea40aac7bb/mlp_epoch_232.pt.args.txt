@@ -1,0 +1,1 @@
+--input-dim 2393  --hidden-dim1 64 --hidden-dim2 64 --dropout-p 0.2 
