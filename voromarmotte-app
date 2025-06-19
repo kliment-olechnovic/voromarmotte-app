@@ -7,11 +7,13 @@ cat >&2 << 'EOF'
 'voromarmotte-app' predicts persistence of contact areas in a protein structure
 
 Options:
-    --input | -i              string     input file path
+    --input | -i              string  *  input file path or '_list' to read file paths from stdin
     --conda-path              string     conda installation path, default is ''
     --conda-env               string     conda environment name, default is 'voromarmotte-env'
     --subselect-contacts      string     query to subselect inter-chain contacts, default is '[]'
     --output-per-contact      string     output file path for the table of per-contact scores, default is ''
+    --output-table-file       string     output file path for the global scores, default is '_stdout'
+    --processors              number     maximum number of processors to run in parallel, default is 1
     --help | -h                          flag to display help message and exit
 
 Standard output:
@@ -24,6 +26,8 @@ Examples:
     ./voromarmotte-app  --input ./model.pdb --subselect-contacts '[-inter-chain]' > ./table.txt
     
     ./voromarmotte-app  --input ./model.pdb --output-per-contact ./table_of_contacts.txt > ./table.txt
+    
+    find ./models/ -type f -name '*.pdb' | ./voromarmotte-app --subselect-contacts '[-inter-chain]' > ./table.txt
 
 EOF
 exit 1
@@ -44,6 +48,7 @@ CONDA_PATH=""
 CONDA_ENV="voromarmotte-env"
 SUBSELECT_CONTACTS="[]"
 OUTPUT_PER_CONTACT=""
+MAX_PROCESSORS="1"
 HELP_MODE="false"
 
 while [[ $# > 0 ]]
@@ -72,6 +77,14 @@ do
 		OUTPUT_PER_CONTACT="$OPTARG"
 		shift
 		;;
+	--output-table-file)
+		OUTPUT_TABLE_FILE="$OPTARG"
+		shift
+		;;
+	--processors)
+		MAX_PROCESSORS="$OPTARG"
+		shift
+		;;
 	-h|--help)
 		HELP_MODE="true"
 		;;
@@ -89,15 +102,13 @@ fi
 
 ################################################################################
 
-if [ ! -s "$INFILE" ]
+if [ -z "$INFILE" ]
 then
-	echo >&2 "Error: input file '$INFILE' does not exist"
+	echo >&2 "Error: no input provided"
 	exit 1
 fi
 
-INFILE="$(perl -MCwd=realpath -e 'print realpath($ARGV[0])' "$INFILE")"
-
-if [ ! -s "$INFILE" ]
+if [ "$INFILE" != "_list" ] && [ ! -s "$INFILE" ]
 then
 	echo >&2 "Error: input file '$INFILE' does not exist"
 	exit 1
@@ -139,6 +150,53 @@ fi
 command -v R &> /dev/null || { echo >&2 "Error: 'R' executable not in binaries path"; exit 1; }
 
 ################################################################################
+
+if [ "$INFILE" == "_list" ]
+then
+	readonly TMPLDIR=$(mktemp -d)
+	trap "rm -r $TMPLDIR" EXIT
+	
+	cat | egrep . | sort | uniq > "$TMPLDIR/input_list"
+	
+	if [ ! -s "$TMPLDIR/input_list" ]
+	then
+		echo >&2 "Error: no stdin data"
+		exit 1
+	fi
+	
+	mkdir -p "$TMPLDIR/children_tables"
+	
+	cat "$TMPLDIR/input_list" \
+	| awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --output-table-file " outdir "/" NR ".pdb"}' \
+	| xargs -L 1 -P "$MAX_PROCESSORS" "$ZEROARG" "${ALLARGS[@]}"
+	
+	find "$TMPLDIR/children_tables" -type f -not -empty \
+	| sort \
+	| xargs -L 1 cat \
+	| awk '{if(NR==1 || $1!="ID") print $0}' \
+	| ${SCRIPTDIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns area_expected_to_persist -multipliers 1 -tolerances 0.0');" \
+	> "$TMPLDIR/full_output_table"
+	
+	if [ -n "$OUTPUT_TABLE_FILE" ] && [ "$OUTPUT_TABLE_FILE" != "_stdout" ]
+	then
+		mkdir -p "$(dirname "$OUTPUT_TABLE_FILE")"
+		cat "$TMPLDIR/full_output_table" > "$OUTPUT_TABLE_FILE"
+	else
+		cat "$TMPLDIR/full_output_table"
+	fi
+	
+	exit 0
+fi
+
+################################################################################
+
+INFILE="$(perl -MCwd=realpath -e 'print realpath($ARGV[0])' "$INFILE")"
+
+if [ ! -s "$INFILE" ]
+then
+	echo >&2 "Error: input file '$INFILE' does not exist"
+	exit 1
+fi
 
 readonly TMPLDIR=$(mktemp -d)
 trap "rm -r $TMPLDIR" EXIT
@@ -182,5 +240,15 @@ fi
 
 cat "${TMPLDIR}/summary" \
 | sed "s|IDVALUE|$(basename ${INFILE})|" \
-| column -t
+| column -t \
+| {
+if [ -n "$OUTPUT_TABLE_FILE" ] && [ "$OUTPUT_TABLE_FILE" != "_stdout" ]
+then
+	mkdir -p "$(dirname ${OUTPUT_TABLE_FILE})"
+	cat > "$OUTPUT_TABLE_FILE"
+else
+	cat
+fi
+}
+
 
