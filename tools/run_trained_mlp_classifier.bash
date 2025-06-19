@@ -25,5 +25,7 @@ then
 	exit 1
 fi
 
-python -B run_trained_mlp_classifier.py --model-file "$MODELFILE" --data-file "$DATAFILE" $(cat ${ARGSFILE})
+export PYTHONDONTWRITEBYTECODE="yes"
+
+python run_trained_mlp_classifier.py --model-file "$MODELFILE" --data-file "$DATAFILE" $(cat ${ARGSFILE})
 

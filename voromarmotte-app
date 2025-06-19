@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export LANG=C
+export LC_ALL=C
+
 SCRIPTDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 INFILE="$1"
@@ -20,7 +23,7 @@ fi
 
 if [ -z "$CONDA_DEFAULT_ENV" ]
 then
-	source ${HOME}/miniconda3/bin/activate my-env
+	source ${HOME}/miniconda3/bin/activate voromarmotte-env
 fi
 
 readonly TMPLDIR=$(mktemp -d)

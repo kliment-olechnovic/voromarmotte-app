@@ -23,7 +23,7 @@ def parse_args():
 
 args = parse_args()
 
-device = torch.device(args.device_name if torch.cuda.is_available() else 'cpu')
+device = 'cpu'
 
 model = MLPClassifier(args.input_dim, args.hidden_dim1, args.hidden_dim2, args.dropout_p).to(device)
 model.load_state_dict(torch.load(args.model_file, map_location=device))
@@ -32,7 +32,7 @@ model.eval()
 val_data = torch.load(args.data_file)
 val_features = val_data[:, 1:]
 val_dataset = TensorDataset(val_features)
-val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, pin_memory=True, num_workers=4, persistent_workers=True)
+val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, pin_memory=False, num_workers=2, persistent_workers=True)
 
 all_preds_raw = []
 
