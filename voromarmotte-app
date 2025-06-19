@@ -1,11 +1,93 @@
 #!/bin/bash
 
+function print_help_and_exit
+{
+cat >&2 << 'EOF'
+
+'voromarmotte-app' predicts persistence of contact areas in a protein structure
+
+Options:
+    --input | -i              string     input file path
+    --conda-path              string     conda installation path, default is ''
+    --conda-env               string     conda environment name, default is 'voromarmotte-env'
+    --subselect-contacts      string     query to subselect inter-chain contacts, default is '[]'
+    --output-per-contact      string     output file path for the table of per-contact scores, default is ''
+    --help | -h                          flag to display help message and exit
+
+Standard output:
+    space-separated table of global scores
+
+Examples:
+
+    ./voromarmotte-app  --input ./model.pdb --conda-path ~/miniconda3 --conda-env 'voromarmotte-env' > ./table.txt
+    
+    ./voromarmotte-app  --input ./model.pdb --subselect-contacts '[-inter-chain]' > ./table.txt
+    
+    ./voromarmotte-app  --input ./model.pdb --output-per-contact ./table_of_contacts.txt > ./table.txt
+
+EOF
+exit 1
+}
+
+################################################################################
+
 export LANG=C
 export LC_ALL=C
 
 SCRIPTDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-INFILE="$1"
+readonly ZEROARG=$0
+ALLARGS=("$@")
+
+INFILE=""
+CONDA_PATH=""
+CONDA_ENV="voromarmotte-env"
+SUBSELECT_CONTACTS="[]"
+OUTPUT_PER_CONTACT=""
+HELP_MODE="false"
+
+while [[ $# > 0 ]]
+do
+	OPTION="$1"
+	OPTARG="$2"
+	shift
+	case $OPTION in
+	-i|--input)
+		INFILE="$OPTARG"
+		shift
+		;;
+	--conda-path)
+		CONDA_PATH="$OPTARG"
+		shift
+		;;
+	--conda-env)
+		CONDA_ENV="$OPTARG"
+		shift
+		;;
+	--subselect-contacts)
+		SUBSELECT_CONTACTS="$OPTARG"
+		shift
+		;;
+	--output-per-contact)
+		OUTPUT_PER_CONTACT="$OPTARG"
+		shift
+		;;
+	-h|--help)
+		HELP_MODE="true"
+		;;
+	*)
+		echo >&2 "Error: invalid command line option '$OPTION'"
+		exit 1
+		;;
+	esac
+done
+
+if [ "$HELP_MODE" == "true" ]
+then
+	print_help_and_exit
+fi
+
+################################################################################
 
 if [ ! -s "$INFILE" ]
 then
@@ -13,18 +95,50 @@ then
 	exit 1
 fi
 
-INFILE="$(perl -MCwd=realpath -e 'print realpath($ARGV[0])' "$1")"
+INFILE="$(perl -MCwd=realpath -e 'print realpath($ARGV[0])' "$INFILE")"
 
 if [ ! -s "$INFILE" ]
 then
 	echo >&2 "Error: input file '$INFILE' does not exist"
 	exit 1
 fi
+
+################################################################################
 
 if [ -z "$CONDA_DEFAULT_ENV" ]
 then
-	source ${HOME}/miniconda3/bin/activate voromarmotte-env
+	if [ -z "$CONDA_PATH" ]
+	then
+		echo >&2 "Error: not in conda environment, and the conda path is not provided"
+		exit 1
+	fi
+	
+	if [ ! -s "${CONDA_PATH}/bin/activate" ]
+	then
+		echo >&2 "Error: no conda activation script '${CONDA_PATH}/bin/activate'"
+		exit 1
+	fi
+	
+	source "${CONDA_PATH}/bin/activate"
 fi
+
+if [ -n "$CONDA_ENV" ]
+then
+	if [ "$CONDA_DEFAULT_ENV" != "$CONDA_ENV" ]
+	then
+		conda activate "$CONDA_ENV"
+	fi
+	
+	if [ "$CONDA_DEFAULT_ENV" != "$CONDA_ENV" ]
+	then
+		echo >&2 "Error: no '$CONDA_ENV' environment"
+		exit 1
+	fi
+fi
+
+command -v R &> /dev/null || { echo >&2 "Error: 'R' executable not in binaries path"; exit 1; }
+
+################################################################################
 
 readonly TMPLDIR=$(mktemp -d)
 trap "rm -r $TMPLDIR" EXIT
@@ -32,7 +146,14 @@ trap "rm -r $TMPLDIR" EXIT
 ${SCRIPTDIR}/tools/calculate_vcblocks_and_run_trained_mlp_classifier.bash \
   "${SCRIPTDIR}/tools/trained_nn_models/training_5870c524a74c0e90c4e5a6ea40aac7bb/mlp_epoch_232.pt" \
   "$INFILE" \
+  "$SUBSELECT_CONTACTS" \
 > "${TMPLDIR}/table"
+
+if [ ! -s "${TMPLDIR}/table" ]
+then
+	echo >&2 "Error: failed to generate predictions"
+	exit 1
+fi
 
 cd "$TMPLDIR"
 
@@ -41,9 +162,25 @@ df=read.table("table", header=TRUE, stringsAsFactors=FALSE);
 area_total=sum(df$main_rr_contact__area);
 area_expected_to_vanish=sum(df$main_rr_contact__area*(1-df$prediced_probability_to_persist));
 area_expected_to_persist=sum(df$main_rr_contact__area*(0+df$prediced_probability_to_persist));
-result=data.frame(area_total=area_total, area_expected_to_vanish=area_expected_to_vanish, area_expected_to_persist=area_expected_to_persist);
+result=data.frame(ID="IDVALUE", area_expected_to_persist=area_expected_to_persist, area_expected_to_vanish=area_expected_to_vanish, area_total=area_total);
 write.table(result, file="summary", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
 EOF
 
-cat "${TMPLDIR}/summary"
+cd - &> /dev/null
+
+if [ ! -s "${TMPLDIR}/summary" ]
+then
+	echo >&2 "Error: failed to global summary"
+	exit 1
+fi
+
+if [ -n "$OUTPUT_PER_CONTACT" ]
+then
+	mkdir -p "$(dirname ${OUTPUT_PER_CONTACT})"
+	cat "${TMPLDIR}/table" > "$OUTPUT_PER_CONTACT"
+fi
+
+cat "${TMPLDIR}/summary" \
+| sed "s|IDVALUE|$(basename ${INFILE})|" \
+| column -t
 
