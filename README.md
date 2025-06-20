@@ -3,10 +3,11 @@
 VoroMarmotte is method to predict whether Voronoi tessellation-derived contact areas
 observed in a single conformation of a protein are likely to persist (remain stable) or not persist (decrease in area)
 in an ensemble of multiple conformations of the same protein.
+In other words, VoroMarmotte predicts contact area heterogeneity from a single input structure.
 
 VoroMarmotte is developed as one of the results of the MARMOTTTE project.
 The details of the method are to be published soon.
-This repository provides an alpha version of VoroMarmotte.
+This repository provides an alpha version of VoroMarmotte app.
 
 VoroMarmotte is developed by Kliment Olechnovic ([www.kliment.lt](https://www.kliment.lt)).
 
