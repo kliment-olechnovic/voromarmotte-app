@@ -175,6 +175,7 @@ then
 	| xargs -L 1 cat \
 	| awk '{if(NR==1 || $1!="ID") print $0}' \
 	| ${SCRIPTDIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns area_expected_to_persist -multipliers 1 -tolerances 0.0');" \
+	| column -t \
 	> "$TMPLDIR/full_output_table"
 	
 	if [ -n "$OUTPUT_TABLE_FILE" ] && [ "$OUTPUT_TABLE_FILE" != "_stdout" ]
