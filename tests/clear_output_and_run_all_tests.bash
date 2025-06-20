@@ -8,7 +8,7 @@ rm -rf "./output"
 mkdir -p "./output"
 
 find "./input/" -type f -name '*.pdb' \
-| ../voromarmotte-app \
+| ../voromarmotte \
   --input _list \
   --conda-path "${HOME}/miniconda3" \
   --conda-env "voromarmotte-env" \
@@ -16,7 +16,7 @@ find "./input/" -type f -name '*.pdb' \
 > "./output/all_global_scores_for_all_contacts.txt"
 
 find "./input/" -type f -name '*.pdb' \
-| ../voromarmotte-app \
+| ../voromarmotte \
   --input _list \
   --conda-path "${HOME}/miniconda3" \
   --conda-env "voromarmotte-env" \
@@ -29,7 +29,7 @@ find "./input/" -type f -name '*.pdb' \
 do
 	INPUTNAME="$(basename ${INFILE} .pdb)"
 	
-	../voromarmotte-app \
+	../voromarmotte \
 	  --input "$INFILE" \
 	  --conda-path "${HOME}/miniconda3" \
 	  --conda-env "voromarmotte-env" \

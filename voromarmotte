@@ -4,7 +4,7 @@ function print_help_and_exit
 {
 cat >&2 << 'EOF'
 
-'voromarmotte-app' predicts persistence of contact areas in a protein structure
+'voromarmotte' predicts persistence of contact areas in a protein structure
 
 Options:
     --input | -i              string  *  input file path or '_list' to read file paths from stdin
@@ -21,13 +21,13 @@ Standard output:
 
 Examples:
 
-    ./voromarmotte-app  --input ./model.pdb --conda-path ~/miniconda3 --conda-env 'voromarmotte-env' > ./table.txt
+    ./voromarmotte  --input ./model.pdb --conda-path ~/miniconda3 --conda-env 'voromarmotte-env' > ./table.txt
     
-    ./voromarmotte-app  --input ./model.pdb --subselect-contacts '[-inter-chain]' > ./table.txt
+    ./voromarmotte  --input ./model.pdb --subselect-contacts '[-inter-chain]' > ./table.txt
     
-    ./voromarmotte-app  --input ./model.pdb --output-per-contact ./table_of_contacts.txt > ./table.txt
+    ./voromarmotte  --input ./model.pdb --output-per-contact ./table_of_contacts.txt > ./table.txt
     
-    find ./models/ -type f -name '*.pdb' | ./voromarmotte-app --subselect-contacts '[-inter-chain]' > ./table.txt
+    find ./models/ -type f -name '*.pdb' | ./voromarmotte --subselect-contacts '[-inter-chain]' > ./table.txt
 
 EOF
 exit 1
