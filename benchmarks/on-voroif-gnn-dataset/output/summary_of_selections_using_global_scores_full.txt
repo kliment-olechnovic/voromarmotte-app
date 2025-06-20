@@ -1,0 +1,2 @@
+num_of_targets  num_of_failed_selections  fraction_of_succesfull_selections
+1549            14                        0.990961910910265

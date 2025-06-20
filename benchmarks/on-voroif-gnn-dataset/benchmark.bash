@@ -13,16 +13,17 @@ find ./input/structures/ -type f -name '*.pdb' \
 | shuf \
 | ../../voromarmotte --conda-path ~/miniconda3 -i _list --processors 32 --subselect-contacts '[-inter-chain]' --output-table-file "./output/global_scores_inter_chain.txt"
 
-#[ -s "./output/global_scores_full.txt" ] || \
-#find ./input/structures/ -type f -name '*.pdb' \
-#| shuf \
-#| ../../voromarmotte --conda-path ~/miniconda3 -i _list --processors 32 --subselect-contacts '[]' --output-table-file "./output/global_scores_full.txt"
+[ -s "./output/global_scores_full.txt" ] || \
+find ./input/structures/ -type f -name '*.pdb' \
+| shuf \
+| ../../voromarmotte --conda-path ~/miniconda3 -i _list --processors 32 --subselect-contacts '[]' --output-table-file "./output/global_scores_full.txt"
 
 ################################################################################
 
 {
 cat << 'EOF'
 ./output/global_scores_inter_chain.txt ./output/summary_of_selections_using_global_scores_inter_chain.txt
+./output/global_scores_full.txt ./output/summary_of_selections_using_global_scores_full.txt
 EOF
 } \
 | while read -r INFILE OUTFILE
@@ -32,7 +33,7 @@ args=commandArgs(TRUE);
 infile=args[1];
 outfile=args[2];
 
-df1=read.table("./output/global_scores_inter_chain.txt", header=TRUE, stringsAsFactors=FALSE);
+df1=read.table(infile, header=TRUE, stringsAsFactors=FALSE);
 df1$area_persistence_win=(df1$area_expected_to_persist-df1$area_expected_to_vanish)/df1$area_total;
 
 df2=read.table("./input/table_of_cadscores.tsv", header=TRUE, stringsAsFactors=FALSE);
