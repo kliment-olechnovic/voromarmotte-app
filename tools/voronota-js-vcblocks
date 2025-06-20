@@ -4,7 +4,7 @@ function print_help_and_exit
 {
 cat >&2 << 'EOF'
 
-'voronota-js-vcblocks' script rapidly computes area KBPs-Layered-based interface energy of protein complexes.
+'voronota-js-vcblocks' script computes Voronoi Contact Blocks.
 
 Options:
     --akbps-layered-lib           string  *  input area KBPs library file path
@@ -23,7 +23,7 @@ Options:
     --help | -h                              flag to display help message and exit
 
 Standard output:
-    space-separated table of scores
+    space-separated table of Voronoi Contact Blocks
     
 Examples:
 

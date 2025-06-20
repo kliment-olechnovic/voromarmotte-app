@@ -44,7 +44,7 @@ with torch.no_grad():
         preds_raw = torch.sigmoid(val_logits)
         all_preds_raw.extend(preds_raw.float().cpu().squeeze().tolist())
 
-print('prediced_probability_to_persist')
+print('predicted_probability_to_persist')
 for pred in all_preds_raw:
     print(f'{pred}')
 

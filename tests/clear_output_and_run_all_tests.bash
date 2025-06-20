@@ -39,6 +39,8 @@ do
 	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_${INPUTNAME}.txt"
 done
 
+find "./output/" -type f -name '*scores*' | xargs -L 1 ./reprint_table_with_less_digits.bash
+
 find "./output/" -type f -name '*global_scores*' \
 | sort \
 | while read -r RESULTFILE

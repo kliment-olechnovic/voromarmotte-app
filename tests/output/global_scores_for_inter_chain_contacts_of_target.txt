@@ -1,2 +1,2 @@
 ID          area_expected_to_persist  area_expected_to_vanish  area_total
-target.pdb  736.036934416612          307.304285583388         1043.34122
+target.pdb  736.037                   307.304                  1043.34
