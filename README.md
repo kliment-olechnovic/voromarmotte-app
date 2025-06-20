@@ -19,7 +19,7 @@ The currently recommended way to obtain VoroMarmotte is cloning the VoroMarmotte
 
 ```bash
 git clone https://github.com/kliment-olechnovic/voromarmotte-app.git
-cd ./voromarmotte
+cd ./voromarmotte-app
 ```
 
 ## Building the included software

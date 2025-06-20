@@ -1,0 +1,18 @@
+2JKI.pdb    alternative interfaces, not clear which is the best
+2ZIX.pdb    low quality structure according to the PDB validation report
+3N7P.pdb    alternative interfaces, not clear which is the best
+3TX7.pdb    repeat protein, CAD-score can be misleading
+4BMP.pdb    the interface is not predominately through standard amino acids
+4IMI.pdb    repeat protein, CAD-score can be misleading
+4LSX.pdb    repeat protein, CAD-score can be misleading
+4P4Q.pdb    the interface is not predominately through standard amino acids
+4UIP.pdb    repeat protein, CAD-score can be misleading
+4V2C.pdb    repeat protein, CAD-score can be misleading
+5AQB.pdb    repeat protein, CAD-score can be misleading
+5AYS.pdb    alternative interfaces, not clear which is the best
+5WP3.pdb    repeat protein, CAD-score can be misleading
+6K2D.pdb    repeat protein, CAD-score can be misleading
+6LOJ.pdb    repeat protein, CAD-score can be misleading
+6MWQ.pdb    repeat protein, CAD-score can be misleading
+6N4N.pdb    the interface is not predominately through standard amino acids
+6SHX.pdb    alternative interfaces, not clear which is the best
