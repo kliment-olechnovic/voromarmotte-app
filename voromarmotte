@@ -221,7 +221,9 @@ df=read.table("table", header=TRUE, stringsAsFactors=FALSE);
 area_total=sum(df$main_rr_contact__area);
 area_expected_to_vanish=sum(df$main_rr_contact__area*(1-df$predicted_probability_to_persist));
 area_expected_to_persist=sum(df$main_rr_contact__area*(0+df$predicted_probability_to_persist));
-result=data.frame(ID="IDVALUE", area_expected_to_persist=area_expected_to_persist, area_expected_to_vanish=area_expected_to_vanish, area_total=area_total);
+area_pgoodness_s0=sum(df$main_rr_contact__area*(qnorm(df$predicted_probability_to_persist)+0));
+area_pgoodness_s1=sum(df$main_rr_contact__area*(qnorm(df$predicted_probability_to_persist)+1));
+result=data.frame(ID="IDVALUE", area_expected_to_persist=area_expected_to_persist, area_expected_to_vanish=area_expected_to_vanish, area_total=area_total, area_pgoodness_s0=area_pgoodness_s0, area_pgoodness_s1=area_pgoodness_s1);
 write.table(result, file="summary", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
 EOF
 
