@@ -48,6 +48,7 @@ CONDA_PATH=""
 CONDA_ENV="voromarmotte-env"
 SUBSELECT_CONTACTS="[]"
 OUTPUT_PER_CONTACT=""
+OUTPUT_VSCRIPT=""
 MAX_PROCESSORS="1"
 HELP_MODE="false"
 
@@ -75,6 +76,10 @@ do
 		;;
 	--output-per-contact)
 		OUTPUT_PER_CONTACT="$OPTARG"
+		shift
+		;;
+	--output-vscript)
+		OUTPUT_VSCRIPT="$OPTARG"
 		shift
 		;;
 	--output-table-file)
@@ -242,6 +247,19 @@ if [ -n "$OUTPUT_PER_CONTACT" ]
 then
 	mkdir -p "$(dirname ${OUTPUT_PER_CONTACT})"
 	cat "${TMPLDIR}/table" > "$OUTPUT_PER_CONTACT"
+fi
+
+if [ -n "$OUTPUT_VSCRIPT" ]
+then
+	mkdir -p "$(dirname ${OUTPUT_VSCRIPT})"
+	
+	{
+		echo 'color-atoms -col yellow'
+		echo 'construct-contacts-radically-fast -no-intra-residue -generate-graphics'
+		cat "${TMPLDIR}/table" | tail -n +2 | awk '{print "set-adjunct-of-contacts -use [-a1 [-chain " $2 " -rnum " $3 "] -a2 [-chain " $5 " -rnum " $6 "]] -name persistence -value " $10}'
+		echo "show-contacts ((${SUBSELECT_CONTACTS}) and ([-v persistence]))"
+		echo 'spectrum-contacts -use [_visible] -adjunct persistence -scheme rwb -min-val 0.0 -max-val 1.0'
+	} > "$OUTPUT_VSCRIPT"
 fi
 
 cat "${TMPLDIR}/summary" \
