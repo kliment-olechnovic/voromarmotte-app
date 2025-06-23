@@ -78,6 +78,14 @@ fraction_of_succesfull_selections=1-(num_of_failed_selections/num_of_targets);
 
 summary=data.frame(num_of_targets=num_of_targets, num_of_failed_selections=num_of_failed_selections, fraction_of_succesfull_selections=fraction_of_succesfull_selections);
 write.table(summary, file=outfile, row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
+
+rgb_palette=colorRampPalette(c("red", "yellow", "green", "cyan", "blue"));
+thecolors=rgb_palette(100)
+color_indices=round(df$iface_cadscore*99)+1;
+assigned_colors=thecolors[color_indices];
+png(paste0(outfile, "_plot.png"));
+plot(df$area_expected_to_persist, df$area_expected_to_vanish, col=assigned_colors, cex=0.5, pch=19); abline(0, 1);
+dev.off()
 EOF
 
 	cat "$OUTFILE" | column -t | sponge "$OUTFILE"
