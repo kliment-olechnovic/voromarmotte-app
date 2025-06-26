@@ -90,7 +90,7 @@ Examples:
     
     ./voromarmotte  --input ./model.pdb --output-per-contact ./table_of_contacts.txt > ./table.txt
     
-    find ./models/ -type f -name '*.pdb' | ./voromarmotte --subselect-contacts '[-inter-chain]' > ./table.txt
+    find ./models/ -type f -name '*.pdb' | ./voromarmotte --input _list --subselect-contacts '[-inter-chain]' > ./table.txt
     
 ```
 
