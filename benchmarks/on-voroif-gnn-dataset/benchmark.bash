@@ -11,7 +11,7 @@ mkdir -p "./output"
 [ -s "./output/global_scores_inter_chain.txt" ] || \
 find ./input/structures/ -type f -name '*.pdb' \
 | shuf \
-| ../../voromarmotte --conda-path ~/miniconda3 -i _list --processors 32 --subselect-contacts '[-inter-chain]' --output-table-file "./output/global_scores_inter_chain.txt"
+| ../../voromarmotte --conda-path ~/miniconda3 -i _list --processors 32 --subselect-contacts '[-inter-chain]' --more-global-scores "true" --output-table-file "./output/global_scores_inter_chain.txt"
 
 ################################################################################
 

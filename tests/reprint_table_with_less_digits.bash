@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export LANG=C
+export LC_ALL=C
+
 INFILE="$1"
 
 if [ -z "$INFILE" ]

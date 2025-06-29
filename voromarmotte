@@ -49,6 +49,7 @@ CONDA_ENV="voromarmotte-env"
 SUBSELECT_CONTACTS="[]"
 OUTPUT_PER_CONTACT=""
 OUTPUT_VSCRIPT=""
+MORE_GLOBAL_SCORES="false"
 MAX_PROCESSORS="1"
 HELP_MODE="false"
 
@@ -80,6 +81,10 @@ do
 		;;
 	--output-vscript)
 		OUTPUT_VSCRIPT="$OPTARG"
+		shift
+		;;
+	--more-global-scores)
+		MORE_GLOBAL_SCORES="$OPTARG"
 		shift
 		;;
 	--output-table-file)
@@ -264,6 +269,14 @@ fi
 
 cat "${TMPLDIR}/summary" \
 | sed "s|IDVALUE|$(basename ${INFILE})|" \
+| {
+if [ "$MORE_GLOBAL_SCORES" != "true" ]
+then
+	cat | awk '{print $1 " " $2 " " $3 " " $4}'
+else
+	cat
+fi
+} \
 | column -t \
 | {
 if [ -n "$OUTPUT_TABLE_FILE" ] && [ "$OUTPUT_TABLE_FILE" != "_stdout" ]

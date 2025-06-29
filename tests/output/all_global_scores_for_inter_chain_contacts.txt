@@ -1,4 +1,4 @@
-ID          area_expected_to_persist  area_expected_to_vanish  area_total  area_pseudoenergy_direct  area_pseudoenergy_inverse
-target.pdb  736.037                   307.304                  1043.341    506.510                   1836.753
-model2.pdb  514.899                   456.754                  971.653     798.061                   990.635
-model1.pdb  399.674                   572.686                  972.361     1240.187                  668.186
+ID          area_expected_to_persist  area_expected_to_vanish  area_total
+target.pdb  736.037                   307.304                  1043.341
+model2.pdb  514.899                   456.754                  971.653
+model1.pdb  399.674                   572.686                  972.361
