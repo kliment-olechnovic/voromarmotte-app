@@ -12,6 +12,7 @@ Options:
     --conda-env               string     conda environment name, default is 'voromarmotte-env'
     --subselect-contacts      string     query to subselect inter-chain contacts, default is '[]'
     --output-per-contact      string     output file path for the table of per-contact scores, default is ''
+    --output-per-residue      string     output file path for the table of per-residue summary scores, default is ''
     --output-table-file       string     output file path for the global scores, default is '_stdout'
     --processors              number     maximum number of processors to run in parallel, default is 1
     --help | -h                          flag to display help message and exit
@@ -48,6 +49,7 @@ CONDA_PATH=""
 CONDA_ENV="voromarmotte-env"
 SUBSELECT_CONTACTS="[]"
 OUTPUT_PER_CONTACT=""
+OUTPUT_PER_RESIDUE=""
 OUTPUT_VSCRIPT=""
 MORE_GLOBAL_SCORES="false"
 MAX_PROCESSORS="1"
@@ -77,6 +79,10 @@ do
 		;;
 	--output-per-contact)
 		OUTPUT_PER_CONTACT="$OPTARG"
+		shift
+		;;
+	--output-per-residue)
+		OUTPUT_PER_RESIDUE="$OPTARG"
 		shift
 		;;
 	--output-vscript)
@@ -240,6 +246,27 @@ result=data.frame(ID="IDVALUE", area_expected_to_persist=area_expected_to_persis
 write.table(result, file="summary", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
 EOF
 
+if [ -n "$OUTPUT_PER_RESIDUE" ]
+then
+R --vanilla << 'EOF' > /dev/null
+df=read.table("table", header=TRUE, stringsAsFactors=FALSE);
+df$area_expected_to_persist=df$main_rr_contact__area*df$predicted_probability_to_persist;
+df$area_expected_to_vanish=df$main_rr_contact__area*(1-df$predicted_probability_to_persist);
+sdf1=df[,c("area_expected_to_persist", "area_expected_to_vanish")];
+sdf2=sdf1;
+sdf1$chain=df$chain1;
+sdf1$seqnum=df$seqnum1;
+sdf1$resname=df$resname1;
+sdf2$chain=df$chain2;
+sdf2$seqnum=df$seqnum2;
+sdf2$resname=df$resname2;
+sdf=rbind(sdf1, sdf2);
+sdf_summarized=aggregate(. ~ chain + seqnum + resname, data=sdf, FUN=sum);
+sdf_summarized=sdf_summarized[order(0-sdf_summarized$area_expected_to_vanish),];
+write.table(sdf_summarized, file="table_per_residue", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
+EOF
+fi
+
 cd - &> /dev/null
 
 if [ ! -s "${TMPLDIR}/summary" ]
@@ -252,6 +279,12 @@ if [ -n "$OUTPUT_PER_CONTACT" ]
 then
 	mkdir -p "$(dirname ${OUTPUT_PER_CONTACT})"
 	cat "${TMPLDIR}/table" > "$OUTPUT_PER_CONTACT"
+fi
+
+if [ -n "$OUTPUT_PER_RESIDUE" ]
+then
+	mkdir -p "$(dirname ${OUTPUT_PER_RESIDUE})"
+	cat "${TMPLDIR}/table_per_residue" > "$OUTPUT_PER_RESIDUE"
 fi
 
 if [ -n "$OUTPUT_VSCRIPT" ]

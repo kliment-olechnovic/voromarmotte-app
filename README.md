@@ -75,6 +75,7 @@ Options:
     --conda-env               string     conda environment name, default is 'voromarmotte-env'
     --subselect-contacts      string     query to subselect inter-chain contacts, default is '[]'
     --output-per-contact      string     output file path for the table of per-contact scores, default is ''
+    --output-per-residue      string     output file path for the table of per-residue summary scores, default is ''
     --output-table-file       string     output file path for the global scores, default is '_stdout'
     --processors              number     maximum number of processors to run in parallel, default is 1
     --help | -h                          flag to display help message and exit
