@@ -240,9 +240,12 @@ area_expected_to_persist=sum(df$main_rr_contact__area*(0+df$predicted_probabilit
 bounded_probabilities=df$predicted_probability_to_persist;
 bounded_probabilities[which(df$predicted_probability_to_persist<0.005)]=0.005;
 bounded_probabilities[which(df$predicted_probability_to_persist>0.995)]=0.995;
-area_pseudoenergy_direct=0-sum(df$main_rr_contact__area*log(bounded_probabilities));
-area_pseudoenergy_inverse=0-sum(df$main_rr_contact__area*log(1.0-bounded_probabilities));
-result=data.frame(ID="IDVALUE", area_expected_to_persist=area_expected_to_persist, area_expected_to_vanish=area_expected_to_vanish, area_total=area_total, area_pseudoenergy_direct=area_pseudoenergy_direct, area_pseudoenergy_inverse=area_pseudoenergy_inverse);
+area_pseudoenergy_v1=0-sum(df$main_rr_contact__area*(log(bounded_probabilities)-log(1.0-bounded_probabilities)));
+bounded_probability_v2=area_expected_to_persist/area_total;
+bounded_probability_v2=max(c(0.005, bounded_probability_v2));
+bounded_probability_v2=min(c(bounded_probability_v2, 0.995));
+area_pseudoenergy_v2=0-(area_total*(log(bounded_probability_v2)-log(1.0-bounded_probability_v2)));
+result=data.frame(ID="IDVALUE", area_expected_to_persist=area_expected_to_persist, area_expected_to_vanish=area_expected_to_vanish, area_total=area_total, area_pseudoenergy_v1=area_pseudoenergy_v1, area_pseudoenergy_v2=area_pseudoenergy_v2);
 write.table(result, file="summary", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
 EOF
 
