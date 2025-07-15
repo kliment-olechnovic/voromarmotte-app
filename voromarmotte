@@ -308,7 +308,7 @@ cat "${TMPLDIR}/summary" \
 | {
 if [ "$MORE_GLOBAL_SCORES" != "true" ]
 then
-	cat | awk '{print $1 " " $2 " " $3 " " $4}'
+	cat | awk '{print $1 " " $2 " " $3 " " $4 " " $5}'
 else
 	cat
 fi

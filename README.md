@@ -112,9 +112,9 @@ find "./tests/input/" -type f -name '*.pdb' \
 gives
 
 ```
-ID          area_expected_to_persist  area_expected_to_vanish  area_total
-target.pdb  736.036934416612          307.304285583388         1043.34122
-model2.pdb  514.899135986745          456.753564013255         971.6527
-model1.pdb  399.674485370467          572.686044629533         972.36053
+ID          area_expected_to_persist  area_expected_to_vanish  area_total  area_pseudoenergy_v1
+target.pdb  736.036934416612          307.304285583388         1043.34122  -1330.24266560559
+model2.pdb  514.899135986745          456.753564013255         971.6527    -192.57424709485
+model1.pdb  399.674485370467          572.686044629533         972.36053   572.000273266142
 ```
 
