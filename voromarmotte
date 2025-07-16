@@ -51,7 +51,6 @@ SUBSELECT_CONTACTS="[]"
 OUTPUT_PER_CONTACT=""
 OUTPUT_PER_RESIDUE=""
 OUTPUT_VSCRIPT=""
-MORE_GLOBAL_SCORES="false"
 MAX_PROCESSORS="1"
 HELP_MODE="false"
 
@@ -87,10 +86,6 @@ do
 		;;
 	--output-vscript)
 		OUTPUT_VSCRIPT="$OPTARG"
-		shift
-		;;
-	--more-global-scores)
-		MORE_GLOBAL_SCORES="$OPTARG"
 		shift
 		;;
 	--output-table-file)
@@ -190,7 +185,7 @@ then
 	| sort \
 	| xargs -L 1 cat \
 	| awk '{if(NR==1 || $1!="ID") print $0}' \
-	| ${SCRIPTDIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns area_expected_to_persist -multipliers 1 -tolerances 0.0');" \
+	| ${SCRIPTDIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns area_pseudoenergy -multipliers -1 -tolerances 0.0');" \
 	| column -t \
 	> "$TMPLDIR/full_output_table"
 	
@@ -240,12 +235,10 @@ area_expected_to_persist=sum(df$main_rr_contact__area*(0+df$predicted_probabilit
 bounded_probabilities=df$predicted_probability_to_persist;
 bounded_probabilities[which(df$predicted_probability_to_persist<0.005)]=0.005;
 bounded_probabilities[which(df$predicted_probability_to_persist>0.995)]=0.995;
-area_pseudoenergy_v1=0-sum(df$main_rr_contact__area*(log(bounded_probabilities)-log(1.0-bounded_probabilities)));
-bounded_probability_v2=area_expected_to_persist/area_total;
-bounded_probability_v2=max(c(0.005, bounded_probability_v2));
-bounded_probability_v2=min(c(bounded_probability_v2, 0.995));
-area_pseudoenergy_v2=0-(area_total*(log(bounded_probability_v2)-log(1.0-bounded_probability_v2)));
-result=data.frame(ID="IDVALUE", area_expected_to_persist=area_expected_to_persist, area_expected_to_vanish=area_expected_to_vanish, area_total=area_total, area_pseudoenergy_v1=area_pseudoenergy_v1, area_pseudoenergy_v2=area_pseudoenergy_v2);
+area_badness=0-sum(df$main_rr_contact__area*log(bounded_probabilities));
+area_goodness=0-sum(df$main_rr_contact__area*log(1.0-bounded_probabilities));
+area_pseudoenergy=0-(area_goodness-area_badness);
+result=data.frame(ID="IDVALUE", area_pseudoenergy=area_pseudoenergy, area_total=area_total, area_expected_to_persist=area_expected_to_persist, area_expected_to_vanish=area_expected_to_vanish, area_goodness=area_goodness, area_badness=area_badness);
 write.table(result, file="summary", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
 EOF
 
@@ -305,14 +298,6 @@ fi
 
 cat "${TMPLDIR}/summary" \
 | sed "s|IDVALUE|$(basename ${INFILE})|" \
-| {
-if [ "$MORE_GLOBAL_SCORES" != "true" ]
-then
-	cat | awk '{print $1 " " $2 " " $3 " " $4 " " $5}'
-else
-	cat
-fi
-} \
 | column -t \
 | {
 if [ -n "$OUTPUT_TABLE_FILE" ] && [ "$OUTPUT_TABLE_FILE" != "_stdout" ]

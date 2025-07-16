@@ -1,2 +1,2 @@
-ID          area_expected_to_persist  area_expected_to_vanish  area_total  area_pseudoenergy_v1
-target.pdb  736.037                   307.304                  1043.34     -1330.24
+ID          area_pseudoenergy  area_total  area_expected_to_persist  area_expected_to_vanish  area_goodness  area_badness
+target.pdb  -1330.24           1043.34     736.037                   307.304                  1836.75        506.51
