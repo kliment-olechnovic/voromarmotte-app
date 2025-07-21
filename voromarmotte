@@ -14,6 +14,7 @@ Options:
     --output-per-contact      string     output file path for the table of per-contact scores, default is ''
     --output-per-residue      string     output file path for the table of per-residue summary scores, default is ''
     --output-table-file       string     output file path for the global scores, default is '_stdout'
+    --output-vscript          string     output file path for the visualization script for Voronota-GL
     --processors              number     maximum number of processors to run in parallel, default is 1
     --help | -h                          flag to display help message and exit
 
@@ -229,16 +230,39 @@ cd "$TMPLDIR"
 
 R --vanilla << 'EOF' > /dev/null
 df=read.table("table", header=TRUE, stringsAsFactors=FALSE);
-area_total=sum(df$main_rr_contact__area);
-area_expected_to_vanish=sum(df$main_rr_contact__area*(1-df$predicted_probability_to_persist));
-area_expected_to_persist=sum(df$main_rr_contact__area*(0+df$predicted_probability_to_persist));
-bounded_probabilities=df$predicted_probability_to_persist;
-bounded_probabilities[which(df$predicted_probability_to_persist<0.005)]=0.005;
-bounded_probabilities[which(df$predicted_probability_to_persist>0.995)]=0.995;
-area_badness=0-sum(df$main_rr_contact__area*log(bounded_probabilities));
-area_goodness=0-sum(df$main_rr_contact__area*log(1.0-bounded_probabilities));
-area_pseudoenergy=0-(area_goodness-area_badness);
-result=data.frame(ID="IDVALUE", area_pseudoenergy=area_pseudoenergy, area_total=area_total, area_expected_to_persist=area_expected_to_persist, area_expected_to_vanish=area_expected_to_vanish, area_goodness=area_goodness, area_badness=area_badness);
+total_area=sum(df$main_rr_contact__area);
+df$area_expected_to_vanish=(df$main_rr_contact__area*(1-df$predicted_probability_to_persist));
+df$area_expected_to_persist=(df$main_rr_contact__area*(0+df$predicted_probability_to_persist));
+df$bounded_probabilities=df$predicted_probability_to_persist;
+df$bounded_probabilities[which(df$predicted_probability_to_persist<0.005)]=0.005;
+df$bounded_probabilities[which(df$predicted_probability_to_persist>0.995)]=0.995;
+df$area_badness=0-(df$main_rr_contact__area*log(df$bounded_probabilities));
+df$area_goodness=0-(df$main_rr_contact__area*log(1.0-df$bounded_probabilities));
+df$area_pseudoenergy=0-(df$area_goodness-df$area_badness);
+total_area=sum(df$main_rr_contact__area);
+total_area_expected_to_vanish=sum(df$area_expected_to_vanish);
+total_area_expected_to_persist=sum(df$area_expected_to_persist);
+total_area_pseudoenergy=sum(df$area_pseudoenergy);
+total_area_badness=sum(df$area_badness);
+total_area_goodness=sum(df$area_goodness);
+df$exposure_value=(df$main_rr_contact__boundary)/sqrt(df$main_rr_contact__area);
+ordering_by_exposure_value=order(0-df$exposure_value);
+ordered_exposure_values=df$exposure_value[ordering_by_exposure_value];
+ordered_area_pseudoenergies=df$area_pseudoenergy[ordering_by_exposure_value];
+ordered_areas=df$main_rr_contact__area[ordering_by_exposure_value];
+N=length(ordered_exposure_values);
+M=max(1, length(which(ordered_exposure_values>0)));
+subtotal_area_pseudoenergies=rep(0, M);
+subtotal_areas=rep(0, M);
+for(i in 1:M)
+{
+	subtotal_area_pseudoenergies[i]=sum(ordered_area_pseudoenergies[i:N]);
+	subtotal_areas[i]=sum(ordered_areas[i:N]);
+}
+best_core_index=order(subtotal_area_pseudoenergies)[1];
+best_core_area_pseudoenergy=subtotal_area_pseudoenergies[best_core_index];
+best_core_area=subtotal_areas[best_core_index];
+result=data.frame(ID="IDVALUE", area_pseudoenergy=total_area_pseudoenergy, area_total=total_area, area_expected_to_persist=total_area_expected_to_persist, area_expected_to_vanish=total_area_expected_to_vanish, area_goodness=total_area_goodness, area_badness=total_area_badness, best_core_pseudoenergy=best_core_area_pseudoenergy, best_core_area=best_core_area);
 write.table(result, file="summary", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
 EOF
 
