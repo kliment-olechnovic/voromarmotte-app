@@ -236,9 +236,9 @@ df$area_expected_to_persist=(df$main_rr_contact__area*(0+df$predicted_probabilit
 df$bounded_probabilities=df$predicted_probability_to_persist;
 df$bounded_probabilities[which(df$predicted_probability_to_persist<0.005)]=0.005;
 df$bounded_probabilities[which(df$predicted_probability_to_persist>0.995)]=0.995;
-df$area_badness=0-(df$main_rr_contact__area*log(df$bounded_probabilities));
-df$area_goodness=0-(df$main_rr_contact__area*log(1.0-df$bounded_probabilities));
-df$area_pseudoenergy=0-(df$area_goodness-df$area_badness);
+df$area_badness=(df$main_rr_contact__area*log(df$bounded_probabilities));
+df$area_goodness=(df$main_rr_contact__area*log(1.0-df$bounded_probabilities));
+df$area_pseudoenergy=(df$area_goodness-df$area_badness);
 total_area=sum(df$main_rr_contact__area);
 total_area_expected_to_vanish=sum(df$area_expected_to_vanish);
 total_area_expected_to_persist=sum(df$area_expected_to_persist);
@@ -262,7 +262,7 @@ for(i in 1:M)
 best_core_index=order(subtotal_area_pseudoenergies)[1];
 best_core_area_pseudoenergy=subtotal_area_pseudoenergies[best_core_index];
 best_core_area=subtotal_areas[best_core_index];
-result=data.frame(ID="IDVALUE", area_pseudoenergy=total_area_pseudoenergy, area_total=total_area, area_expected_to_persist=total_area_expected_to_persist, area_expected_to_vanish=total_area_expected_to_vanish, area_goodness=total_area_goodness, area_badness=total_area_badness, best_core_pseudoenergy=best_core_area_pseudoenergy, best_core_area=best_core_area);
+result=data.frame(ID="IDVALUE", area_pseudoenergy=total_area_pseudoenergy, area_total=total_area, area_expected_to_persist=total_area_expected_to_persist, area_goodness_pseudoenergy=total_area_goodness, best_core_pseudoenergy=best_core_area_pseudoenergy, best_core_area=best_core_area);
 write.table(result, file="summary", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
 EOF
 
