@@ -77,6 +77,8 @@ Options:
     --output-per-contact      string     output file path for the table of per-contact scores, default is ''
     --output-per-residue      string     output file path for the table of per-residue summary scores, default is ''
     --output-table-file       string     output file path for the global scores, default is '_stdout'
+    --output-vscript          string     output file path for the visualization script for Voronota-GL
+    --output-pymol-vscript    string     output file path for the visualization script for PyMol
     --processors              number     maximum number of processors to run in parallel, default is 1
     --help | -h                          flag to display help message and exit
 
@@ -106,7 +108,7 @@ find "./tests/input/" -type f -name '*.pdb' \
   --conda-path ~/miniconda3 \
   --conda-env "voromarmotte-env" \
   --processors 4 \
-  --subselect-contacts '[-inter-chain]'
+  --subselect-contacts "[-inter-chain]"
 ```
 
 gives
@@ -116,5 +118,33 @@ ID          area_pseudoenergy  area_total  area_expected_to_persist  area_goodne
 target.pdb  -1330.24266560559  1043.34122  736.036934416612          -1836.75303518038           -1465.40963660073       963.03436
 model2.pdb  -192.57424709485   971.6527    514.899135986745          -990.634743868687           -478.757485155433       732.5084
 model1.pdb  572.000273266142   972.36053   399.674485370467          -668.186200634224           -17.1140646562708       721.16258
+```
+
+# Visualization example
+
+Running
+
+```bash
+./voromarmotte \
+  --input "./tests/input/target.pdb" \
+  --conda-path ~/miniconda3 \
+  --conda-env "voromarmotte-env" \
+  --subselect-contacts "[-inter-chain]" \
+  --output-vscript "show_interface.vs" \
+  --output-pymol-vscript "show_interface.py"
+```
+
+output scores and generates two visualiztion scripts: "show_interface.vs" and "show_interface.py" for PyMol.
+
+The "show_interface.vs" script is to be run by Voronota-GL after loading the input structure:
+
+```bash
+voronota-gl "./tests/input/target.pdb" "show_interface.vs"
+```
+
+The "show_interface.py" script is to be run by PyMol (should work with both 'pymol' and 'pymol-oss.pymol'):
+
+```bash
+pymol-oss.pymol "./tests/input/target.pdb" "show_interface.py"
 ```
 

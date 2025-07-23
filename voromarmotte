@@ -15,6 +15,7 @@ Options:
     --output-per-residue      string     output file path for the table of per-residue summary scores, default is ''
     --output-table-file       string     output file path for the global scores, default is '_stdout'
     --output-vscript          string     output file path for the visualization script for Voronota-GL
+    --output-pymol-vscript    string     output file path for the visualization script for PyMol
     --processors              number     maximum number of processors to run in parallel, default is 1
     --help | -h                          flag to display help message and exit
 
@@ -52,6 +53,7 @@ SUBSELECT_CONTACTS="[]"
 OUTPUT_PER_CONTACT=""
 OUTPUT_PER_RESIDUE=""
 OUTPUT_VSCRIPT=""
+OUTPUT_PYMOL_VSCRIPT=""
 MAX_PROCESSORS="1"
 HELP_MODE="false"
 
@@ -87,6 +89,10 @@ do
 		;;
 	--output-vscript)
 		OUTPUT_VSCRIPT="$OPTARG"
+		shift
+		;;
+	--output-pymol-vscript)
+		OUTPUT_PYMOL_VSCRIPT="$OPTARG"
 		shift
 		;;
 	--output-table-file)
@@ -307,10 +313,8 @@ then
 	cat "${TMPLDIR}/table_per_residue" > "$OUTPUT_PER_RESIDUE"
 fi
 
-if [ -n "$OUTPUT_VSCRIPT" ]
+if [ -n "$OUTPUT_VSCRIPT" ] || [ -n "$OUTPUT_PYMOL_VSCRIPT" ]
 then
-	mkdir -p "$(dirname ${OUTPUT_VSCRIPT})"
-	
 	{
 		echo 'color-atoms -col yellow'
 		echo 'construct-contacts-radically-fast -no-intra-residue -generate-graphics'
@@ -318,7 +322,28 @@ then
 		echo "set-adjunct-of-contacts -use (${SUBSELECT_CONTACTS}) -name persistence -value 0.0 -residue-residue-values ${RRSET}"
 		echo "show-contacts ((${SUBSELECT_CONTACTS}) and ([-v persistence]))"
 		echo 'spectrum-contacts -use [_visible] -adjunct persistence -scheme rwb -min-val 0.0 -max-val 1.0'
-	} > "$OUTPUT_VSCRIPT"
+	} > "${TMPLDIR}/vscript.vs"
+	
+	if [ -n "$OUTPUT_VSCRIPT" ]
+	then
+		mkdir -p "$(dirname ${OUTPUT_VSCRIPT})"
+		cat "${TMPLDIR}/vscript.vs" > "$OUTPUT_VSCRIPT"
+	fi
+	
+	if [ -n "$OUTPUT_PYMOL_VSCRIPT" ]
+	then
+		PYMOL_NAME="$(basename ${OUTPUT_PYMOL_VSCRIPT} .py | tr '.' '_')"
+		mkdir -p "$(dirname ${OUTPUT_PYMOL_VSCRIPT})"
+		
+		{
+			echo "import ${INFILE}"
+			cat "${TMPLDIR}/vscript.vs"
+			echo "export-contacts-as-pymol-cgo -use [_visible] -name ${PYMOL_NAME} -file ${OUTPUT_PYMOL_VSCRIPT}"
+		} > "${TMPLDIR}/vscript_to_pymol.vs"
+		
+		echo "voronota_source('-file', '${TMPLDIR}/vscript_to_pymol.vs');" \
+		| ${SCRIPTDIR}/tools/voronota-js 
+	fi
 fi
 
 cat "${TMPLDIR}/summary" \
