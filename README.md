@@ -130,21 +130,26 @@ Running
   --conda-path ~/miniconda3 \
   --conda-env "voromarmotte-env" \
   --subselect-contacts "[-inter-chain]" \
-  --output-vscript "show_interface.vs" \
-  --output-pymol-vscript "show_interface.py"
+  --output-vscript "show_inter_chain_interface.vs" \
+  --output-pymol-vscript "show_inter_chain_interface.py"
 ```
 
-output scores and generates two visualiztion scripts: "show_interface.vs" and "show_interface.py" for PyMol.
+output scores and generates two visualiztion scripts: "show_inter_chain_interface.vs" and "show_inter_chain_interface.py" for PyMol.
 
 The "show_interface.vs" script is to be run by Voronota-GL after loading the input structure:
 
 ```bash
-voronota-gl "./tests/input/target.pdb" "show_interface.vs"
+voronota-gl "./tests/input/target.pdb" "show_inter_chain_interface.vs"
 ```
+
+![](./docs/screenshot-voronota-gl.png)
 
 The "show_interface.py" script is to be run by PyMol (should work with both 'pymol' and 'pymol-oss.pymol'):
 
 ```bash
-pymol-oss.pymol "./tests/input/target.pdb" "show_interface.py"
+pymol-oss.pymol "./tests/input/target.pdb" "show_inter_chain_interface.py"
 ```
+
+![](./docs/screenshot-pymol.png)
+
 
