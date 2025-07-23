@@ -314,7 +314,8 @@ then
 	{
 		echo 'color-atoms -col yellow'
 		echo 'construct-contacts-radically-fast -no-intra-residue -generate-graphics'
-		cat "${TMPLDIR}/table" | tail -n +2 | awk '{print "set-adjunct-of-contacts -use [-a1 [-chain " $2 " -rnum " $3 "] -a2 [-chain " $5 " -rnum " $6 "]] -name persistence -value " $10}'
+		RRSET="$(cat ${TMPLDIR}/table | tail -n +2 | awk '{print $2 " " $3 " " $5 " " $6 " " $10}' | tr '\n' ' ')"
+		echo "set-adjunct-of-contacts -use (${SUBSELECT_CONTACTS}) -name persistence -value 0.0 -residue-residue-values ${RRSET}"
 		echo "show-contacts ((${SUBSELECT_CONTACTS}) and ([-v persistence]))"
 		echo 'spectrum-contacts -use [_visible] -adjunct persistence -scheme rwb -min-val 0.0 -max-val 1.0'
 	} > "$OUTPUT_VSCRIPT"

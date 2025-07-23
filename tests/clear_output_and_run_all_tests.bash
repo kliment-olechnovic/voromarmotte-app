@@ -36,6 +36,7 @@ do
 	  --processors 4 \
 	  --subselect-contacts '[-inter-chain]' \
 	  --output-per-contact "./output/local_scores_for_inter_chain_contacts_of_${INPUTNAME}.txt" \
+	  --output-vscript "./output/show_inter_chain_contacts_of_${INPUTNAME}.vs" \
 	  --output-per-residue "./output/local_scores_per_residue_for_inter_chain_contacts_of_${INPUTNAME}.txt" \
 	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_${INPUTNAME}.txt"
 done
