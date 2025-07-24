@@ -234,6 +234,8 @@ trap "rm -r $TMPLDIR" EXIT
 
 if [ "$REBUILD_SIDECHAINS" == "true" ] || [ -n "$MUTATE_SIDECHAINS" ]
 then
+	MUTATE_SIDECHAINS="$(echo ${MUTATE_SIDECHAINS} | tr '_' ' ')"
+	
 	NEWINFILENAME="$(basename ${INFILE} .pdb)_rebuilt"
 	
 	if [ -n "$MUTATE_SIDECHAINS" ]
