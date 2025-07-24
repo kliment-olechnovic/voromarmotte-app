@@ -1,0 +1,160 @@
+#!/bin/bash
+
+function print_help_and_exit
+{
+cat >&2 << 'EOF'
+
+'voronota-js-pdb-utensil-run-faspr' script reads structure, optionally mutates residues, runs FASPR, outputs structure.
+
+Options:
+    --rotamers-lib            string     path to rotamers library file
+    --mutate                  string     list of mutations, defined triples of strings (chain resnum resname)
+    --help | -h                          flag to display help message and exit
+
+Standard input:
+    structure in PDB format
+    
+Standard output:
+    structure in PDB format
+    
+Examples:
+    
+    cat "./model.pdb" | voronota-js-pdb-utensil-run-faspr > "./result.pdb"
+    
+    cat "./model.pdb" | voronota-js-pdb-utensil-run-faspr --mutate "A 15 ALA" > "./result.pdb"
+    
+    cat "./model.pdb" | voronota-js-pdb-utensil-run-faspr --rotamers-lib "./dun2010bbdep.bin" --mutate "A 15 ALA B 23 TRP" > "./result.pdb"
+    
+EOF
+exit 1
+}
+
+export LANG=C
+export LC_ALL=C
+
+SCRIPTDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+readonly ZEROARG=$0
+ALLARGS=("$@")
+
+if [[ $ZEROARG == *"/"* ]]
+then
+	export PATH="${SCRIPTDIR}:${PATH}"
+fi
+
+command -v voronota-js &> /dev/null || { echo >&2 "Error: 'voronota-js' executable not in binaries path"; exit 1; }
+
+ROTAMERSLIB="${SCRIPTDIR}/dun2010bbdep.bin"
+MUTATATIONS=""
+HELP_MODE="false"
+
+while [[ $# > 0 ]]
+do
+	OPTION="$1"
+	OPTARG="$2"
+	shift
+	case $OPTION in
+	--rotamers-lib)
+		ROTAMERSLIB="$OPTARG"
+		shift
+		;;
+	--mutate)
+		MUTATIONS="$OPTARG"
+		shift
+		;;
+	-h|--help)
+		HELP_MODE="true"
+		;;
+	*)
+		echo >&2 "Error: invalid command line option '$OPTION'"
+		exit 1
+		;;
+	esac
+done
+
+if [ "$HELP_MODE" == "true" ]
+then
+	print_help_and_exit
+fi
+
+if [ -z "$ROTAMERSLIB" ]
+then
+	echo >&2 "Error: no rotamers library file provided"
+	exit 1
+fi
+
+if [ ! -s "$ROTAMERSLIB" ]
+then
+	echo >&2 "Error: rotamers library file '${ROTAMERSLIB}' does not exist"
+	exit 1
+fi
+
+readonly TMPLDIR=$(mktemp -d)
+trap "rm -r $TMPLDIR" EXIT
+
+if [ -n "$MUTATIONS" ]
+then
+	echo "$MUTATIONS" | sed 's/\s\+$//' | sed 's/\s\+/\n/g' > "$TMPLDIR/mutations_expanded"
+	NUM_OF_TOKENS="$(cat ${TMPLDIR}/mutations_expanded | wc -l)"
+	
+	if [ "$NUM_OF_TOKENS" -eq 0 ] || [ $(( $NUM_OF_TOKENS % 3 )) -ne 0 ]
+	then
+		echo >&2 "Error: invalid list of mutations '$MUTATIONS'"
+		exit 1
+	fi
+	
+	cat "${TMPLDIR}/mutations_expanded" | xargs -L 3 echo > "$TMPLDIR/mutations_blocks"
+fi
+
+cat > "$TMPLDIR/input.pdb"
+
+if [ ! -s "$TMPLDIR/input.pdb" ]
+then
+	echo >&2 "Error: no stdin data"
+	exit 1
+fi
+
+{
+cat << EOF
+var params={}
+params.rotamers_lib='$ROTAMERSLIB';
+params.input_file='$TMPLDIR/input.pdb';
+params.output_file='$TMPLDIR/output.pdb';
+EOF
+
+cat << 'EOF'
+voronota_import("-file", params.input_file);
+voronota_assert_full_success("Failed to input structure");
+EOF
+
+if [ -s "$TMPLDIR/mutations_blocks" ]
+then
+	echo "voronota_restrict_atoms('-use', '[-aname C,N,O,CA]');"
+	echo "voronota_assert_full_success('Failed to remove non-backbone atoms');"
+	
+	cat "$TMPLDIR/mutations_blocks" \
+	| while read -r CHAIN RESNUM RESNAME
+	do
+		echo "voronota_set_atom_names('-use', '[-chain ${CHAIN} -rnum ${RESNUM}]', '-residue-name', '${RESNAME}');"
+		echo "voronota_assert_full_success('Failed to rename a residue');"
+	done
+fi
+
+cat << 'EOF'
+voronota_faspr("-lib-file", params.rotamers_lib);
+voronota_assert_full_success("Failed to run FASPR");
+
+voronota_export_atoms("-as-pdb", "-file", params.output_file);
+voronota_assert_full_success("Failed to output structure");
+EOF
+} \
+| voronota-js --no-setup-defaults
+
+if [ ! -s "$TMPLDIR/output.pdb" ]
+then
+	echo >&2 "Error: no output produced"
+	exit 1
+fi
+
+cat "$TMPLDIR/output.pdb"
+
