@@ -179,13 +179,13 @@ fi
 
 command -v R &> /dev/null || { echo >&2 "Error: 'R' executable not in binaries path"; exit 1; }
 
+readonly TMPLDIR=$(mktemp -d)
+trap "rm -r $TMPLDIR" EXIT
+
 ################################################################################
 
 if [ "$INFILE" == "_list" ]
 then
-	readonly TMPLDIR=$(mktemp -d)
-	trap "rm -r $TMPLDIR" EXIT
-	
 	cat | egrep . | sort | uniq > "$TMPLDIR/input_list"
 	
 	if [ ! -s "$TMPLDIR/input_list" ]
@@ -228,9 +228,6 @@ then
 	echo >&2 "Error: input file '$INFILE' does not exist"
 	exit 1
 fi
-
-readonly TMPLDIR=$(mktemp -d)
-trap "rm -r $TMPLDIR" EXIT
 
 if [ "$REBUILD_SIDECHAINS" == "true" ] || [ -n "$MUTATE_SIDECHAINS" ]
 then
