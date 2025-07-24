@@ -10,6 +10,8 @@ Options:
     --input | -i              string  *  input file path or '_list' to read file paths from stdin
     --conda-path              string     conda installation path, default is ''
     --conda-env               string     conda environment name, default is 'voromarmotte-env'
+    --rebuild-sidechains      string     flag to rebuild side-chains with FASPR, can be 'false' or 'true', default is 'false'
+    --mutate-sidechains       string     triples of strings (chain resnum resname) to define mutations and rebuild with FASPR
     --subselect-contacts      string     query to subselect inter-chain contacts, default is '[]'
     --output-per-contact      string     output file path for the table of per-contact scores, default is ''
     --output-per-residue      string     output file path for the table of per-residue summary scores, default is ''
@@ -49,6 +51,8 @@ ALLARGS=("$@")
 INFILE=""
 CONDA_PATH=""
 CONDA_ENV="voromarmotte-env"
+REBUILD_SIDECHAINS="FALSE"
+MUTATE_SIDECHAINS=""
 SUBSELECT_CONTACTS="[]"
 OUTPUT_PER_CONTACT=""
 OUTPUT_PER_RESIDUE=""
@@ -73,6 +77,14 @@ do
 		;;
 	--conda-env)
 		CONDA_ENV="$OPTARG"
+		shift
+		;;
+	--rebuild-sidechains)
+		REBUILD_SIDECHAINS="$OPTARG"
+		shift
+		;;
+	--mutate-sidechains)
+		MUTATE_SIDECHAINS="$OPTARG"
 		shift
 		;;
 	--subselect-contacts)
@@ -219,6 +231,28 @@ fi
 
 readonly TMPLDIR=$(mktemp -d)
 trap "rm -r $TMPLDIR" EXIT
+
+if [ "$REBUILD_SIDECHAINS" == "true" ] || [ -n "$MUTATE_SIDECHAINS" ]
+then
+	NEWINFILENAME="$(basename ${INFILE} .pdb)_rebuilt"
+	
+	if [ -n "$MUTATE_SIDECHAINS" ]
+	then
+		NEWINFILENAME="${NEWINFILENAME}_mutated_$(echo ${MUTATE_SIDECHAINS} | sed 's/\s\+/_/g' | tr ',' '-' | tr ':' '-')"
+	fi
+	
+	NEWINFILE="${TMPLDIR}/${NEWINFILENAME}.pdb"
+	
+	cat "$INFILE" | ${SCRIPTDIR}/tools/voronota-js-pdb-utensil-run-faspr --mutate "$MUTATE_SIDECHAINS" > "$NEWINFILE"
+	
+	if [ ! -s "$NEWINFILE" ]
+	then
+		echo >&2 "Error: failed to rebuild sidechains for input file '${INFILE}'"
+		exit 1
+	fi
+	
+	INFILE="$NEWINFILE"
+fi
 
 ${SCRIPTDIR}/tools/calculate_vcblocks_and_run_trained_mlp_classifier.bash \
   "${SCRIPTDIR}/tools/trained_nn_models/training_5870c524a74c0e90c4e5a6ea40aac7bb/mlp_epoch_232.pt" \

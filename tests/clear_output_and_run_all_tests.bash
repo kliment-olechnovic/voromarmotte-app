@@ -25,6 +25,27 @@ find "./input/" -type f -name '*.pdb' \
 > "./output/all_global_scores_for_inter_chain_contacts.txt"
 
 find "./input/" -type f -name '*.pdb' \
+| ../voromarmotte \
+  --input _list \
+  --conda-path "${HOME}/miniconda3" \
+  --conda-env "voromarmotte-env" \
+  --processors 4 \
+  --subselect-contacts '[-inter-chain]' \
+  --rebuild-sidechains true \
+> "./output/all_global_scores_for_rebuilt_inter_chain_contacts.txt"
+
+find "./input/" -type f -name '*.pdb' \
+| ../voromarmotte \
+  --input _list \
+  --conda-path "${HOME}/miniconda3" \
+  --conda-env "voromarmotte-env" \
+  --processors 4 \
+  --subselect-contacts '[-inter-chain]' \
+  --rebuild-sidechains true \
+  --mutate-sidechains 'any 55 GLY' \
+> "./output/all_global_scores_for_rebuilt_mutated_inter_chain_contacts.txt"
+
+find "./input/" -type f -name '*.pdb' \
 | while read -r INFILE
 do
 	INPUTNAME="$(basename ${INFILE} .pdb)"

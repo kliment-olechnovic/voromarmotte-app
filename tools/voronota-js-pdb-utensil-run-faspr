@@ -8,7 +8,7 @@ cat >&2 << 'EOF'
 
 Options:
     --rotamers-lib            string     path to rotamers library file
-    --mutate                  string     list of mutations, defined triples of strings (chain resnum resname)
+    --mutate                  string     triples of strings (chain resnum resname) to define mutations
     --help | -h                          flag to display help message and exit
 
 Standard input:
