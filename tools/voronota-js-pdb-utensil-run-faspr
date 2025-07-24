@@ -25,6 +25,8 @@ Examples:
     
     cat "./model.pdb" | voronota-js-pdb-utensil-run-faspr --rotamers-lib "./dun2010bbdep.bin" --mutate "A 15 ALA B 23 TRP" > "./result.pdb"
     
+    cat "./model.pdb" | voronota-js-pdb-utensil-run-faspr --rotamers-lib "./dun2010bbdep.bin" --mutate "A,B 15:17,20 ARG" > "./result.pdb"
+    
 EOF
 exit 1
 }
@@ -135,8 +137,23 @@ then
 	cat "$TMPLDIR/mutations_blocks" \
 	| while read -r CHAIN RESNUM RESNAME
 	do
-		echo "voronota_set_atom_names('-use', '[-chain ${CHAIN} -rnum ${RESNUM}]', '-residue-name', '${RESNAME}');"
-		echo "voronota_assert_full_success('Failed to rename a residue');"
+		if [ "$CHAIN" != "any" ] && [ "$RESNUM" != "any" ]
+		then
+			echo "voronota_set_atom_names('-use', '[-chain ${CHAIN} -rnum ${RESNUM}]', '-residue-name', '${RESNAME}');"
+			echo "voronota_assert_full_success('Failed to rename a residue');"
+		fi
+		
+		if [ "$CHAIN" == "any" ] && [ "$RESNUM" != "any" ]
+		then
+			echo "voronota_set_atom_names('-use', '[-rnum ${RESNUM}]', '-residue-name', '${RESNAME}');"
+			echo "voronota_assert_full_success('Failed to rename a residue');"
+		fi
+		
+		if [ "$CHAIN" != "any" ] && [ "$RESNUM" == "any" ]
+		then
+			echo "voronota_set_atom_names('-use', '[-chain ${CHAIN}]', '-residue-name', '${RESNAME}');"
+			echo "voronota_assert_full_success('Failed to rename a residue');"
+		fi
 	done
 fi
 
