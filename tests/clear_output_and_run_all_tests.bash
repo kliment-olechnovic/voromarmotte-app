@@ -61,6 +61,17 @@ do
 	  --output-pymol-vscript "./output/show_inter_chain_contacts_of_${INPUTNAME}.py" \
 	  --output-per-residue "./output/local_scores_per_residue_for_inter_chain_contacts_of_${INPUTNAME}.txt" \
 	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_${INPUTNAME}.txt"
+	  
+	../voromarmotte \
+	  --input "$INFILE" \
+	  --conda-path "${HOME}/miniconda3" \
+	  --conda-env "voromarmotte-env" \
+	  --processors 4 \
+	  --subselect-contacts '[]' \
+	  --rebuild-sidechains true \
+	  --output-per-contact "./output/local_scores_for_rebuilt_all_contacts_of_${INPUTNAME}.txt" \
+	  --output-per-residue "./output/local_scores_per_residue_for_rebuilt_all_contacts_of_${INPUTNAME}.txt" \
+	> /dev/null
 done
 
 find "./output/" -type f -name '*scores*' | xargs -L 1 ./reprint_table_with_less_digits.bash

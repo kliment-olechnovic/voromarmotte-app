@@ -304,15 +304,10 @@ best_core_area_pseudoenergy=subtotal_area_pseudoenergies[best_core_index];
 best_core_area=subtotal_areas[best_core_index];
 result=data.frame(ID="IDVALUE", area_pseudoenergy=total_area_pseudoenergy, area_total=total_area, area_expected_to_persist=total_area_expected_to_persist, area_goodness_pseudoenergy=total_area_goodness, best_core_pseudoenergy=best_core_area_pseudoenergy, best_core_area=best_core_area);
 write.table(result, file="summary", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
-EOF
 
-if [ -n "$OUTPUT_PER_RESIDUE" ]
-then
-R --vanilla << 'EOF' > /dev/null
-df=read.table("table", header=TRUE, stringsAsFactors=FALSE);
-df$area_expected_to_persist=df$main_rr_contact__area*df$predicted_probability_to_persist;
-df$area_expected_to_vanish=df$main_rr_contact__area*(1-df$predicted_probability_to_persist);
-sdf1=df[,c("area_expected_to_persist", "area_expected_to_vanish")];
+df$area=df$main_rr_contact__area;
+df$boundary=df$main_rr_contact__boundary;
+sdf1=df[,c("area_pseudoenergy", "area", "area_expected_to_persist", "area_goodness", "boundary")];
 sdf2=sdf1;
 sdf1$chain=df$chain1;
 sdf1$seqnum=df$seqnum1;
@@ -322,10 +317,13 @@ sdf2$seqnum=df$seqnum2;
 sdf2$resname=df$resname2;
 sdf=rbind(sdf1, sdf2);
 sdf_summarized=aggregate(. ~ chain + seqnum + resname, data=sdf, FUN=sum);
-sdf_summarized=sdf_summarized[order(0-sdf_summarized$area_expected_to_vanish),];
+sdf_summarized=sdf_summarized[order(sdf_summarized$area_pseudoenergy),];
 write.table(sdf_summarized, file="table_per_residue", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
+
+sdf=df[,c("chain1", "seqnum1", "resname1", "chain2", "seqnum2", "resname2", "area_pseudoenergy", "area", "boundary", "predicted_probability_to_persist")]
+sdf=sdf[order(sdf$area_pseudoenergy),];
+write.table(sdf, file="table_per_contact", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
 EOF
-fi
 
 cd - &> /dev/null
 
@@ -338,7 +336,7 @@ fi
 if [ -n "$OUTPUT_PER_CONTACT" ]
 then
 	mkdir -p "$(dirname ${OUTPUT_PER_CONTACT})"
-	cat "${TMPLDIR}/table" > "$OUTPUT_PER_CONTACT"
+	cat "${TMPLDIR}/table_per_contact" > "$OUTPUT_PER_CONTACT"
 fi
 
 if [ -n "$OUTPUT_PER_RESIDUE" ]
