@@ -12,6 +12,7 @@ Options:
     --conda-env               string     conda environment name, default is 'voromarmotte-env'
     --rebuild-sidechains      string     flag to rebuild side-chains with FASPR, can be 'false' or 'true', default is 'false'
     --mutate-sidechains       string     triples of strings (chain resnum resname) to define mutations and rebuild with FASPR
+    --relax-with-openmm       string     path to the file with parameters to enable the OpenMM-based relaxation of input, default is ''
     --subselect-contacts      string     query to subselect inter-chain contacts, default is '[]'
     --output-per-contact      string     output file path for the table of per-contact scores, default is ''
     --output-per-residue      string     output file path for the table of per-residue summary scores, default is ''
@@ -53,6 +54,7 @@ CONDA_PATH="${HOME}/miniconda3"
 CONDA_ENV="voromarmotte-env"
 REBUILD_SIDECHAINS="false"
 MUTATE_SIDECHAINS=""
+RELAX_WITH_OPENMM=""
 SUBSELECT_CONTACTS="[]"
 OUTPUT_PER_CONTACT=""
 OUTPUT_PER_RESIDUE=""
@@ -85,6 +87,10 @@ do
 		;;
 	--mutate-sidechains)
 		MUTATE_SIDECHAINS="$OPTARG"
+		shift
+		;;
+	--relax-with-openmm)
+		RELAX_WITH_OPENMM="$OPTARG"
 		shift
 		;;
 	--subselect-contacts)
@@ -141,6 +147,12 @@ fi
 if [ "$INFILE" != "_list" ] && [ ! -s "$INFILE" ]
 then
 	echo >&2 "Error: input file '$INFILE' does not exist"
+	exit 1
+fi
+
+if [ -n "$RELAX_WITH_OPENMM" ] && [ ! -s "$RELAX_WITH_OPENMM" ]
+then
+	echo >&2 "Error: OpenMM relaxation parameters file '$RELAX_WITH_OPENMM' does not exist"
 	exit 1
 fi
 
@@ -287,6 +299,33 @@ then
 	if [ ! -s "$NEWINFILE" ]
 	then
 		echo >&2 "Error: failed to rebuild sidechains for input file '${INFILE}'"
+		exit 1
+	fi
+	
+	INFILE="$NEWINFILE"
+fi
+
+if [ -n "$RELAX_WITH_OPENMM" ]
+then
+	RELAX_WITH_OPENMM="$(perl -MCwd=realpath -e 'print realpath($ARGV[0])' "$RELAX_WITH_OPENMM")"
+	
+	if [ ! -s "$RELAX_WITH_OPENMM" ]
+	then
+		echo >&2 "Error: OpenMM relaxation parameters file '$RELAX_WITH_OPENMM' does not exist"
+		exit 1
+	fi
+
+	RELAX_WITH_OPENMM_PARAMS="$(cat ${RELAX_WITH_OPENMM} | sed "s|HOME/|${HOME}/|" | tr '\n' ' ')"
+	
+	NEWINFILENAME="$(basename ${INFILE} .pdb)_relaxed"
+	
+	NEWINFILE="${TMPLDIR}/${NEWINFILENAME}.pdb"
+	
+	${SCRIPTDIR}/tools/relax-with-openmm ${RELAX_WITH_OPENMM_PARAMS} --input "$INFILE" --output "$NEWINFILE" --trim-output
+	
+	if [ ! -s "$NEWINFILE" ]
+	then
+		echo >&2 "Error: failed to relax input file"
 		exit 1
 	fi
 	
