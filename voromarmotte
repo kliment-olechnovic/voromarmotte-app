@@ -227,7 +227,7 @@ then
 		awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --output-table-file " outdir "/" NR ".pdb"}'
 	fi
 	} \
-	| xargs -L 1 -P "$MAX_PROCESSORS" "$ZEROARG" "${ALLARGS[@]}"
+	| xargs -L 1 -P "$MAX_PROCESSORS" "$ZEROARG" "${ALLARGS[@]}" --processors 1
 	
 	find "$TMPLDIR/children_tables" -type f -not -empty \
 	| sort \
