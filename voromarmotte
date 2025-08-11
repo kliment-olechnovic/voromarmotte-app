@@ -197,7 +197,15 @@ then
 	mkdir -p "$TMPLDIR/children_tables"
 	
 	cat "$TMPLDIR/input_list" \
-	| awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --output-table-file " outdir "/" NR ".pdb"}' \
+	| {
+	if [ "$MUTATE_SIDECHAINS" == "_list" ]
+	then
+		sed 's/^\s*\(\S\+\)\s\+\(.*\)$/\1_FIRSTGAP_\2/' | tr ' ' '_' | tr '\t' '_' | sed 's/_FIRSTGAP_/ /' \
+		| awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --mutate-sidechains " $2 " --output-table-file " outdir "/" NR ".pdb"}'
+	else
+		awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --output-table-file " outdir "/" NR ".pdb"}'
+	fi
+	} \
 	| xargs -L 1 -P "$MAX_PROCESSORS" "$ZEROARG" "${ALLARGS[@]}"
 	
 	find "$TMPLDIR/children_tables" -type f -not -empty \

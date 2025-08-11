@@ -1,0 +1,8 @@
+ID                                   area_pseudoenergy  area_total  area_expected_to_persist  area_goodness_pseudoenergy  best_core_pseudoenergy  best_core_area
+target_rebuilt_mutated_A_48_PHE.pdb  -1129.274          944.761     674.283                   -1535.95                    -1184.913               925.321
+target_rebuilt_mutated_A_48_LEU.pdb  -1086.083          948.211     668.776                   -1505.88                    -1133.695               933.565
+target_rebuilt_mutated_A_48_ALA.pdb  -1073.411          948.822     664.670                   -1503.38                    -1129.001               929.382
+target_rebuilt_mutated_A_48_CYS.pdb  -1066.927          948.600     661.507                   -1484.15                    -1089.632               938.912
+target_rebuilt_mutated_A_48_GLY.pdb  -944.303           940.822     641.094                   -1397.62                    -999.905                921.382
+target_rebuilt_mutated_A_48_TRP.pdb  -935.393           942.681     641.215                   -1394.51                    -991.032                923.241
+target_rebuilt_mutated_A_48_ARG.pdb  -893.982           942.770     636.859                   -1351.62                    -956.771                838.312

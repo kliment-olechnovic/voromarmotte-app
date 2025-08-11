@@ -72,7 +72,27 @@ do
 	  --output-per-contact "./output/local_scores_for_rebuilt_all_contacts_of_${INPUTNAME}.txt" \
 	  --output-per-residue "./output/local_scores_per_residue_for_rebuilt_all_contacts_of_${INPUTNAME}.txt" \
 	> /dev/null
+
+	{
+cat << EOF
+${INFILE} A 48 ALA
+${INFILE} A 48 LEU
+${INFILE} A 48 GLY
+${INFILE} A 48 PHE
+${INFILE} A 48 TRP
+${INFILE} A 48 ARG
+${INFILE} A 48 CYS
+EOF
+	} \
+	| ../voromarmotte \
+	  --input _list \
+	  --mutate-sidechains _list \
+	  --conda-path "${HOME}/miniconda3" \
+	  --subselect-contacts '[-inter-chain]' \
+	  --processors 4 \
+	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_mutated_${INPUTNAME}.txt"
 done
+
 
 find "./output/" -type f -name '*scores*' | xargs -L 1 ./reprint_table_with_less_digits.bash
 
