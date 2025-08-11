@@ -8,7 +8,7 @@ cat >&2 << 'EOF'
 
 Options:
     --input | -i              string  *  input file path or '_list' to read file paths from stdin
-    --conda-path              string     conda installation path, default is ''
+    --conda-path              string     conda installation path, default is '${HOME}/miniconda3'
     --conda-env               string     conda environment name, default is 'voromarmotte-env'
     --rebuild-sidechains      string     flag to rebuild side-chains with FASPR, can be 'false' or 'true', default is 'false'
     --mutate-sidechains       string     triples of strings (chain resnum resname) to define mutations and rebuild with FASPR
@@ -49,9 +49,9 @@ readonly ZEROARG=$0
 ALLARGS=("$@")
 
 INFILE=""
-CONDA_PATH=""
+CONDA_PATH="${HOME}/miniconda3"
 CONDA_ENV="voromarmotte-env"
-REBUILD_SIDECHAINS="FALSE"
+REBUILD_SIDECHAINS="false"
 MUTATE_SIDECHAINS=""
 SUBSELECT_CONTACTS="[]"
 OUTPUT_PER_CONTACT=""
@@ -141,6 +141,14 @@ fi
 if [ "$INFILE" != "_list" ] && [ ! -s "$INFILE" ]
 then
 	echo >&2 "Error: input file '$INFILE' does not exist"
+	exit 1
+fi
+
+################################################################################
+
+if [ "$REBUILD_SIDECHAINS" != "false" ] && [ "$REBUILD_SIDECHAINS" != "true" ]
+then
+	echo >&2 "Error: invalid value '${REBUILD_SIDECHAINS}' for the side-chain rebuilding flag, must be 'false' or 'true'"
 	exit 1
 fi
 

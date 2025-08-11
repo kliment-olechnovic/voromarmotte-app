@@ -52,8 +52,6 @@ do
 	
 	../voromarmotte \
 	  --input "$INFILE" \
-	  --conda-path "${HOME}/miniconda3" \
-	  --conda-env "voromarmotte-env" \
 	  --processors 4 \
 	  --subselect-contacts '[-inter-chain]' \
 	  --output-per-contact "./output/local_scores_for_inter_chain_contacts_of_${INPUTNAME}.txt" \
