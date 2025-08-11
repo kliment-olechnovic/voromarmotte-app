@@ -137,22 +137,25 @@ then
 	cat "$TMPLDIR/mutations_blocks" \
 	| while read -r CHAIN RESNUM RESNAME
 	do
-		if [ "$CHAIN" != "any" ] && [ "$RESNUM" != "any" ]
+		if [ "$RESNAME" != "original" ]
 		then
-			echo "voronota_set_atom_names('-use', '[-chain ${CHAIN} -rnum ${RESNUM}]', '-residue-name', '${RESNAME}');"
-			echo "voronota_assert_full_success('Failed to rename a residue');"
-		fi
-		
-		if [ "$CHAIN" == "any" ] && [ "$RESNUM" != "any" ]
-		then
-			echo "voronota_set_atom_names('-use', '[-rnum ${RESNUM}]', '-residue-name', '${RESNAME}');"
-			echo "voronota_assert_full_success('Failed to rename a residue');"
-		fi
-		
-		if [ "$CHAIN" != "any" ] && [ "$RESNUM" == "any" ]
-		then
-			echo "voronota_set_atom_names('-use', '[-chain ${CHAIN}]', '-residue-name', '${RESNAME}');"
-			echo "voronota_assert_full_success('Failed to rename a residue');"
+			if [ "$CHAIN" != "any" ] && [ "$RESNUM" != "any" ]
+			then
+				echo "voronota_set_atom_names('-use', '[-chain ${CHAIN} -rnum ${RESNUM}]', '-residue-name', '${RESNAME}');"
+				echo "voronota_assert_full_success('Failed to rename a residue');"
+			fi
+			
+			if [ "$CHAIN" == "any" ] && [ "$RESNUM" != "any" ]
+			then
+				echo "voronota_set_atom_names('-use', '[-rnum ${RESNUM}]', '-residue-name', '${RESNAME}');"
+				echo "voronota_assert_full_success('Failed to rename a residue');"
+			fi
+			
+			if [ "$CHAIN" != "any" ] && [ "$RESNUM" == "any" ]
+			then
+				echo "voronota_set_atom_names('-use', '[-chain ${CHAIN}]', '-residue-name', '${RESNAME}');"
+				echo "voronota_assert_full_success('Failed to rename a residue');"
+			fi
 		fi
 	done
 fi

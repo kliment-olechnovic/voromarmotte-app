@@ -89,6 +89,13 @@ EOF
 	  --subselect-contacts '[-inter-chain]' \
 	  --processors 4 \
 	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_mutated_${INPUTNAME}.txt"
+
+	../voromarmotte \
+	  --input "$INFILE" \
+	  --processors 4 \
+	  --subselect-contacts '[-inter-chain]' \
+	  --mutate-sidechains 'A 48 any' \
+	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_exhaustively_mutated_${INPUTNAME}.txt"
 done
 
 

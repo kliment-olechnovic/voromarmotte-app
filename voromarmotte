@@ -208,7 +208,20 @@ then
 	| {
 	if [ "$MUTATE_SIDECHAINS" == "_list" ]
 	then
-		sed 's/^\s*\(\S\+\)\s\+\(.*\)$/\1_FIRSTGAP_\2/' | tr ' ' '_' | tr '\t' '_' | sed 's/_FIRSTGAP_/ /' \
+		while read -r LINEFILE LINECHAIN LINERNUM LINERNAME
+		do
+			if [ "$LINERNAME" == "any" ]
+			then
+				for IRNAME in ALA ARG ASN ASP CYS GLN GLU GLY HIS ILE LEU LYS MET PHE PRO SER THR TRP TYR VAL
+				do
+					echo "$LINEFILE $LINECHAIN $LINERNUM $IRNAME"
+				done
+				echo "$LINEFILE $LINECHAIN $LINERNUM original"
+			else
+				echo "$LINEFILE $LINECHAIN $LINERNUM $LINERNAME"
+			fi
+		done \
+		| sed 's/^\s*\(\S\+\)\s\+\(.*\)$/\1_FIRSTGAP_\2/' | tr ' ' '_' | tr '\t' '_' | sed 's/_FIRSTGAP_/ /' \
 		| awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --mutate-sidechains " $2 " --output-table-file " outdir "/" NR ".pdb"}'
 	else
 		awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --output-table-file " outdir "/" NR ".pdb"}'
@@ -243,6 +256,17 @@ if [ ! -s "$INFILE" ]
 then
 	echo >&2 "Error: input file '$INFILE' does not exist"
 	exit 1
+fi
+
+if [ -n "$MUTATE_SIDECHAINS" ]
+then
+	read LINECHAIN LINERNUM LINERNAME <<<  "$(echo ${MUTATE_SIDECHAINS} | tr '_' ' ')"
+	if [ "$LINERNAME" == "any" ]
+	then
+		echo "$INFILE $LINECHAIN $LINERNUM any" \
+		| "$ZEROARG" "${ALLARGS[@]}" --input _list --mutate-sidechains _list
+		exit 0
+	fi
 fi
 
 if [ "$REBUILD_SIDECHAINS" == "true" ] || [ -n "$MUTATE_SIDECHAINS" ]
