@@ -239,7 +239,6 @@ then
 				do
 					echo "$LINEFILE $LINECHAIN $LINERNUM $IRNAME"
 				done
-				echo "$LINEFILE $LINECHAIN $LINERNUM original"
 			else
 				echo "$LINEFILE $LINECHAIN $LINERNUM $LINERNAME"
 			fi

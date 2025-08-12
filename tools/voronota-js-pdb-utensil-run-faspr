@@ -94,9 +94,29 @@ fi
 readonly TMPLDIR=$(mktemp -d)
 trap "rm -r $TMPLDIR" EXIT
 
+cat > "$TMPLDIR/input.pdb"
+
+if [ ! -s "$TMPLDIR/input.pdb" ]
+then
+	echo >&2 "Error: no stdin data"
+	exit 1
+fi
+
 if [ -n "$MUTATIONS" ]
 then
-	echo "$MUTATIONS" | sed 's/\s\+$//' | sed 's/\s\+/\n/g' > "$TMPLDIR/mutations_expanded"
+	if [ "$MUTATIONS" == "randomize" ]
+	then
+		cat "$TMPLDIR/input.pdb" | egrep '^ATOM' | sed 's/^ATOM.................\(.\)\(....\).*$/\1 \2/' | sort | uniq \
+		| while read -r CHAIN RNUM
+		do
+			echo "$CHAIN"
+			echo "$RNUM"
+			echo 'ALA ARG ASN ASP CYS GLN GLU GLY HIS ILE LEU LYS MET PHE PRO SER THR TRP TYR VAL' | tr ' ' '\n' | shuf | head -1
+		done > "$TMPLDIR/mutations_expanded"
+	else
+		echo "$MUTATIONS" | sed 's/\s\+$//' | sed 's/\s\+/\n/g' > "$TMPLDIR/mutations_expanded"
+	fi
+	
 	NUM_OF_TOKENS="$(cat ${TMPLDIR}/mutations_expanded | wc -l)"
 	
 	if [ "$NUM_OF_TOKENS" -eq 0 ] || [ $(( $NUM_OF_TOKENS % 3 )) -ne 0 ]
@@ -106,14 +126,6 @@ then
 	fi
 	
 	cat "${TMPLDIR}/mutations_expanded" | xargs -L 3 echo > "$TMPLDIR/mutations_blocks"
-fi
-
-cat > "$TMPLDIR/input.pdb"
-
-if [ ! -s "$TMPLDIR/input.pdb" ]
-then
-	echo >&2 "Error: no stdin data"
-	exit 1
 fi
 
 {
