@@ -46,30 +46,32 @@ find "./input/" -type f -name '*.pdb' \
 > "./output/all_global_scores_for_rebuilt_mutated_inter_chain_contacts.txt"
 
 find "./input/" -type f -name '*.pdb' \
+| ../voromarmotte \
+  --input _list \
+  --processors 4 \
+  --subselect-contacts '[-inter-chain]' \
+  --output-per-contact "./output/local_scores_for_inter_chain_contacts_of_INPUTNAME.txt" \
+  --output-vscript "./output/show_inter_chain_contacts_of_INPUTNAME.vs" \
+  --output-pymol-vscript "./output/show_inter_chain_contacts_of_INPUTNAME.py" \
+  --output-per-residue "./output/local_scores_per_residue_for_inter_chain_contacts_of_INPUTNAME.txt" \
+  --output-table-file "./output/all_global_scores_for_inter_chain_contacts_run2.txt"
+  
+find "./input/" -type f -name '*.pdb' \
+| ../voromarmotte \
+  --input _list \
+  --processors 4 \
+  --conda-path "${HOME}/miniconda3" \
+  --conda-env "voromarmotte-env" \
+  --subselect-contacts '[]' \
+  --rebuild-sidechains true \
+  --output-per-contact "./output/local_scores_for_all_contacts_of_INPUTNAME.txt" \
+  --output-per-residue "./output/local_scores_per_residue_for_all_contacts_of_INPUTNAME.txt" \
+> /dev/null
+
+find "./input/" -type f -name '*.pdb' \
 | while read -r INFILE
 do
 	INPUTNAME="$(basename ${INFILE} .pdb)"
-	
-	../voromarmotte \
-	  --input "$INFILE" \
-	  --processors 4 \
-	  --subselect-contacts '[-inter-chain]' \
-	  --output-per-contact "./output/local_scores_for_inter_chain_contacts_of_${INPUTNAME}.txt" \
-	  --output-vscript "./output/show_inter_chain_contacts_of_${INPUTNAME}.vs" \
-	  --output-pymol-vscript "./output/show_inter_chain_contacts_of_${INPUTNAME}.py" \
-	  --output-per-residue "./output/local_scores_per_residue_for_inter_chain_contacts_of_${INPUTNAME}.txt" \
-	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_${INPUTNAME}.txt"
-	  
-	../voromarmotte \
-	  --input "$INFILE" \
-	  --conda-path "${HOME}/miniconda3" \
-	  --conda-env "voromarmotte-env" \
-	  --processors 4 \
-	  --subselect-contacts '[]' \
-	  --rebuild-sidechains true \
-	  --output-per-contact "./output/local_scores_for_rebuilt_all_contacts_of_${INPUTNAME}.txt" \
-	  --output-per-residue "./output/local_scores_per_residue_for_rebuilt_all_contacts_of_${INPUTNAME}.txt" \
-	> /dev/null
 
 	{
 cat << EOF

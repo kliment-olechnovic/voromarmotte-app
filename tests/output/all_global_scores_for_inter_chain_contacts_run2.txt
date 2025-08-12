@@ -1,0 +1,4 @@
+ID          area_pseudoenergy  area_total  area_expected_to_persist  area_goodness_pseudoenergy  best_core_pseudoenergy  best_core_area
+target.pdb  -1330.243          1043.341    736.037                   -1836.753                   -1465.4096              963.034
+model2.pdb  -192.574           971.653     514.899                   -990.635                    -478.7575               732.508
+model1.pdb  572.000            972.361     399.674                   -668.186                    -17.1141                721.163

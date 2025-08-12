@@ -14,6 +14,7 @@ Options:
     --mutate-sidechains       string     triples of strings (chain resnum resname) to define mutations and rebuild with FASPR
     --relax-with-openmm       string     parameters (':'-separated tokens, or 'basic') to enable the OpenMM relaxation, default is ''
     --subselect-contacts      string     query to subselect inter-chain contacts, default is '[]'
+    --output-atoms-file       string     output file path for the processed input atoms
     --output-per-contact      string     output file path for the table of per-contact scores, default is ''
     --output-per-residue      string     output file path for the table of per-residue summary scores, default is ''
     --output-table-file       string     output file path for the global scores, default is '_stdout'
@@ -39,6 +40,16 @@ EOF
 exit 1
 }
 
+function substitute_in_string
+{
+	SUBSTITUTE_TEMPLATE="$1"
+	SUBSTITUTE_SOURCE="$2"
+	SUBSTITUTE_DESTINATION="$3"
+	SUBSTITUTE_DESTINATION="$(basename ${SUBSTITUTE_DESTINATION} .pdb)"
+	SUBSTITUTE_DESTINATION="$(basename ${SUBSTITUTE_DESTINATION} .cif)"
+	echo "$SUBSTITUTE_TEMPLATE" | sed "s|${SUBSTITUTE_SOURCE}|${SUBSTITUTE_DESTINATION}|"
+}
+
 ################################################################################
 
 export LANG=C
@@ -56,8 +67,10 @@ REBUILD_SIDECHAINS="false"
 MUTATE_SIDECHAINS=""
 RELAX_WITH_OPENMM=""
 SUBSELECT_CONTACTS="[]"
+OUTPUT_ATOMS_FILE=""
 OUTPUT_PER_CONTACT=""
 OUTPUT_PER_RESIDUE=""
+OUTPUT_TABLE_FILE=""
 OUTPUT_VSCRIPT=""
 OUTPUT_PYMOL_VSCRIPT=""
 MAX_PROCESSORS="1"
@@ -95,6 +108,10 @@ do
 		;;
 	--subselect-contacts)
 		SUBSELECT_CONTACTS="$OPTARG"
+		shift
+		;;
+	--output-atoms-file)
+		OUTPUT_ATOMS_FILE="$OPTARG"
 		shift
 		;;
 	--output-per-contact)
@@ -321,6 +338,21 @@ then
 	fi
 	
 	INFILE="$NEWINFILE"
+fi
+
+################################################################################
+
+OUTPUT_ATOMS_FILE="$(substitute_in_string "${OUTPUT_ATOMS_FILE}" "INPUTNAME" "${INFILE}")"
+OUTPUT_PER_CONTACT="$(substitute_in_string "${OUTPUT_PER_CONTACT}" "INPUTNAME" "${INFILE}")"
+OUTPUT_PER_RESIDUE="$(substitute_in_string "${OUTPUT_PER_RESIDUE}" "INPUTNAME" "${INFILE}")"
+OUTPUT_TABLE_FILE="$(substitute_in_string "${OUTPUT_TABLE_FILE}" "INPUTNAME" "${INFILE}")"
+OUTPUT_VSCRIPT="$(substitute_in_string "${OUTPUT_VSCRIPT}" "INPUTNAME" "${INFILE}")"
+OUTPUT_PYMOL_VSCRIPT="$(substitute_in_string "${OUTPUT_PYMOL_VSCRIPT}" "INPUTNAME" "${INFILE}")"
+
+if [ -n "$OUTPUT_ATOMS_FILE" ]
+then
+	mkdir -p "$(dirname ${OUTPUT_ATOMS_FILE})"
+	cp "$INFILE" "$OUTPUT_ATOMS_FILE"
 fi
 
 ${SCRIPTDIR}/tools/calculate_vcblocks_and_run_trained_mlp_classifier.bash \
