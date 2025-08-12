@@ -569,6 +569,7 @@ cat << 'EOF'
 from openmm.app import *
 from openmm import *
 from openmm.unit import *
+import numpy as np
 pdb = PDBFile('prepared.pdb')
 EOF
 
@@ -610,6 +611,12 @@ EOF
 
 cat << 'EOF'
 simulation.context.setPositions(pdb.positions)
+
+pos = simulation.context.getState(getPositions=True).getPositions(asNumpy=True)
+rng = np.random.default_rng(42)
+noise = rng.normal(0.0, 0.002, size=pos.shape) * nanometer
+simulation.context.setPositions(pos + noise)
+
 simulation.minimizeEnergy(maxIterations=MAX_ITERATIONS)
 positions = simulation.context.getState(getPositions=True).getPositions()
 PDBFile.writeFile(simulation.topology, positions, open('relaxed.pdb', 'w'), keepIds=True)

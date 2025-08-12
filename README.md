@@ -45,13 +45,20 @@ bash Miniconda3-latest-Linux-x86_64.sh
 source ~/miniconda3/bin/activate
 
 # import and activate provided environment
-conda env create --file voromarmotte-env.yaml
+conda env create --file ./env/voromarmotte-env.yaml
 conda activate voromarmotte-env
 
 # if you do not have R installed in your system, install it (below is an example for Ubuntu)
 sudo apt-get install r-base
 ```
 
+### Optionally, setting up an environment for relaxing with OpenMM
+
+In case the `--relax-with-openmm` option will be used, an environment for running OpenMM can be set up:
+
+```bash
+conda env create --file ./env/openmm-env.yaml
+```
 
 # Running the VoroMarmotte command-line tool
 
@@ -71,8 +78,11 @@ The following is the help message output:
 
 Options:
     --input | -i              string  *  input file path or '_list' to read file paths from stdin
-    --conda-path              string     conda installation path, default is ''
+    --conda-path              string     conda installation path, default is '${HOME}/miniconda3'
     --conda-env               string     conda environment name, default is 'voromarmotte-env'
+    --rebuild-sidechains      string     flag to rebuild side-chains with FASPR, can be 'false' or 'true', default is 'false'
+    --mutate-sidechains       string     triples of strings (chain resnum resname) to define mutations and rebuild with FASPR
+    --relax-with-openmm       string     parameters (':'-separated tokens, or 'basic') to enable the OpenMM relaxation, default is ''
     --subselect-contacts      string     query to subselect inter-chain contacts, default is '[]'
     --output-per-contact      string     output file path for the table of per-contact scores, default is ''
     --output-per-residue      string     output file path for the table of per-residue summary scores, default is ''

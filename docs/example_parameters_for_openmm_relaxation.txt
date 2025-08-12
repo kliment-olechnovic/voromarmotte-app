@@ -1,3 +1,0 @@
---conda-path       HOME/miniconda3
---conda-env        openmm-env
---max-iterations   50
