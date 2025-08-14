@@ -2,4 +2,12 @@
 
 cd "$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-g++ -std=c++14 -I"./voronota-js-src/expansion_js/src/dependencies" -O3 -o "./voronota-js" $(find ./voronota-js-src/ -name '*.cpp')
+BUILDMODE="$1"
+
+if [ "$BUILDMODE" == "static" ]
+then
+	g++ -std=c++14 -static-libgcc -static-libstdc++ -static -O3 -I "./voronota-js-src/expansion_js/src/dependencies" -o "./voronota-js" $(find ./voronota-js-src/expansion_js/ -name '*.cpp')
+else
+	g++ -std=c++14 -O3 -I "./voronota-js-src/expansion_js/src/dependencies" -o "./voronota-js" $(find ./voronota-js-src/expansion_js/ -name '*.cpp')
+fi
+
