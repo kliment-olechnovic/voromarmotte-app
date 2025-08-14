@@ -96,7 +96,7 @@ EOF
 	  --input "$INFILE" \
 	  --processors 4 \
 	  --subselect-contacts '[-inter-chain]' \
-	  --mutate-sidechains 'A 48 any' \
+	  --mutate-sidechains 'A 48 every' \
 	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_exhaustively_mutated_${INPUTNAME}.txt"
 done
 
