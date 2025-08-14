@@ -271,6 +271,40 @@ fi
 
 if [ -n "$MUTATE_SIDECHAINS" ]
 then
+	if [[ "$MUTATE_SIDECHAINS" == "interface"* ]]
+	then
+		read MUTATE_CHAIN MUTATE_TO_RNAME <<< "$(echo ${MUTATE_SIDECHAINS} | tr '-' ' ' | tr '_' ' ' | tr '=' ' ' | tr ':' ' ' | awk '{print $2 " " $3}')"
+		{
+			${SCRIPTDIR}/tools/voronota-lt \
+			  --input "$INFILE" \
+			  --compute-only-inter-chain-contacts \
+			  --print-contacts-residue-level \
+			2> /dev/null
+		} \
+		| awk '{if($1=="cr"){print $2 " " $3 "\n" $5 " " $6}}' | tr '|' ' ' | sort | uniq \
+		| awk -v chainsel=${MUTATE_CHAIN} '{if($1==chainsel){print $2 " " $3}}' \
+		| while read -r LINERNUM LINERNAME
+		do
+			if [ "$MUTATE_TO_RNAME" == "every" ]
+			then
+				for IRNAME in ALA ARG ASN ASP CYS GLN GLU GLY HIS ILE LEU LYS MET PHE PRO SER THR TRP TYR VAL
+				do
+					if [ "$IRNAME" != "$LINERNAME" ]
+					then
+						echo "${INFILE} ${MUTATE_CHAIN} ${LINERNUM} ${IRNAME}"
+					fi
+				done
+			else
+				if [ "$MUTATE_TO_RNAME" != "$LINERNAME" ]
+				then
+					echo "${INFILE} ${MUTATE_CHAIN} ${LINERNUM} ${MUTATE_TO_RNAME}"
+				fi
+			fi
+		done \
+		| "$ZEROARG" "${ALLARGS[@]}" --input _list --mutate-sidechains _list
+		exit 0
+	fi
+	
 	if [[ "$MUTATE_SIDECHAINS" == *"every"* ]]
 	then
 		for IRNAME in ALA ARG ASN ASP CYS GLN GLU GLY HIS ILE LEU LYS MET PHE PRO SER THR TRP TYR VAL
