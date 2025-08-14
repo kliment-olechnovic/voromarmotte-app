@@ -24,12 +24,12 @@ cd ./voromarmotte-app
 
 ## Building the included software
 
-VoroMarmotte comes with a statically built 'voronota-js' binary for Linux in the 'tools' subdirectory.
+VoroMarmotte comes with statically built binaries for Linux in the 'tools' subdirectory.
 
-The source code for 'voronota-js' is also included, and can be used to build 'voronota-js' with the following command: 
+The source code for the compilable software is included, and can be used to build all the needed executable with the following single command: 
 
 ```bash
-./tools/build-voronota-js.bash
+./tools/build-all.bash
 ```
 
 ## Setting up an environment for running VoroMarmotte
