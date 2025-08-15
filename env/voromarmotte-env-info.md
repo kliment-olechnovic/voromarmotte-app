@@ -17,12 +17,18 @@ conda activate voromarmotte-env
 
 conda install pip
 
-pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+pip3 install torch --index-url https://download.pytorch.org/whl/cpu
 
 conda install numpy pandas openmm pdbfixer r-base
 
 conda env export -n voromarmotte-env --no-builds > voromarmotte-env.yaml
 ```
+
+## Troubleshooting 'voromarmotte-env.yaml'
+
+You may want to remove `+` postfixes if `pip` gets confused.
+For examle, replace `torch==2.8.0+cu126` with `torch==2.8.0`.
+
 
 # Commands to load the 'voromarmotte-env' environment:
 
