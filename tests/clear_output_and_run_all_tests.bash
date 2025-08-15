@@ -89,15 +89,22 @@ EOF
 	  --mutate-sidechains _list \
 	  --conda-path "${HOME}/miniconda3" \
 	  --subselect-contacts '[-inter-chain]' \
-	  --processors 4 \
+	  --processors 6 \
 	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_mutated_${INPUTNAME}.txt"
 
 	../voromarmotte \
 	  --input "$INFILE" \
-	  --processors 4 \
+	  --processors 6 \
 	  --subselect-contacts '[-inter-chain]' \
 	  --mutate-sidechains 'A 48 every' \
 	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_exhaustively_mutated_${INPUTNAME}.txt"
+
+	../voromarmotte \
+	  --input "$INFILE" \
+	  --processors 6 \
+	  --subselect-contacts '[-inter-chain]' \
+	  --mutate-sidechains 'interface-A-ALA' \
+	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_interface_residues_mutated_to_ALA_${INPUTNAME}.txt"
 done
 
 
