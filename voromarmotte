@@ -301,7 +301,20 @@ then
 				fi
 			fi
 		done \
+		> "$TMPLDIR/input_mutations_list"
+		
+		if [ ! -s "$TMPLDIR/input_mutations_list" ]
+		then
+			echo >&2 "Error: failed to generated interface mutation requests"
+			exit 1
+		fi
+		
+		{
+			cat "$TMPLDIR/input_mutations_list"
+			echo "${INFILE} any any original"
+		} \
 		| "$ZEROARG" "${ALLARGS[@]}" --input _list --mutate-sidechains _list
+		
 		exit 0
 	fi
 	
@@ -324,7 +337,10 @@ then
 	
 	if [ -n "$MUTATE_SIDECHAINS" ]
 	then
-		NEWINFILENAME="${NEWINFILENAME}_mutated_$(echo ${MUTATE_SIDECHAINS} | sed 's/\s\+/_/g' | tr ',' '-' | tr ':' '-')"
+		if [ "$MUTATE_SIDECHAINS" != "any any original" ]
+		then
+			NEWINFILENAME="${NEWINFILENAME}_mutated_$(echo ${MUTATE_SIDECHAINS} | sed 's/\s\+/_/g' | tr ',' '-' | tr ':' '-')"
+		fi
 	fi
 	
 	NEWINFILE="${TMPLDIR}/${NEWINFILENAME}.pdb"
