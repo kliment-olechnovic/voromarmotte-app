@@ -320,11 +320,49 @@ then
 	
 	if [[ "$MUTATE_SIDECHAINS" == *"every"* ]]
 	then
+		${SCRIPTDIR}/tools/voronota-lt \
+		  --input "$INFILE" \
+		  --write-input-balls-to-file "$TMPLDIR/all_input_atomic_balls" \
+		  --exit-before-calculations \
+		2> /dev/null
+
 		for IRNAME in ALA ARG ASN ASP CYS GLN GLU GLY HIS ILE LEU LYS MET PHE PRO SER THR TRP TYR VAL
 		do
-			echo "${INFILE} $(echo "${MUTATE_SIDECHAINS}" | sed "s/every/${IRNAME}/g")"
+			echo "$(echo "${MUTATE_SIDECHAINS}" | sed "s/every/${IRNAME}/g")"
 		done \
+		| tr ' ' '_' \
+		| sort | uniq \
+		> "$TMPLDIR/mutations_list_all"
+		
+		cat "$TMPLDIR/all_input_atomic_balls" \
+		| awk '{print $1 "_" $2}' \
+		| tr '|' '_' \
+		| sort | uniq \
+		> "$TMPLDIR/mutations_list_forbidden"
+		
+		{
+			cat "$TMPLDIR/mutations_list_all"
+			cat "$TMPLDIR/mutations_list_forbidden"
+			cat "$TMPLDIR/mutations_list_forbidden"
+		} \
+		| sort | uniq -c \
+		| awk '{if($1==1){print $2}}' \
+		| tr '_' ' ' \
+		| sed "s|^|${INFILE} |" \
+		> "$TMPLDIR/input_mutations_list"
+		
+		if [ ! -s "$TMPLDIR/input_mutations_list" ]
+		then
+			echo >&2 "Error: failed to generated mutation requests"
+			exit 1
+		fi
+		
+		{
+			cat "$TMPLDIR/input_mutations_list"
+			echo "${INFILE} any any original"
+		} \
 		| "$ZEROARG" "${ALLARGS[@]}" --input _list --mutate-sidechains _list
+		
 		exit 0
 	fi
 fi
