@@ -400,7 +400,7 @@ then
 	
 	if [ "$RELAX_WITH_OPENMM_PARAMS" == "basic" ]
 	then
-		RELAX_WITH_OPENMM_PARAMS="--conda-path ${CONDA_PATH} --conda-env openmm-env --max-iterations 100"
+		RELAX_WITH_OPENMM_PARAMS="--max-iterations 100"
 	fi
 	
 	NEWINFILENAME="$(basename ${INFILE} .pdb)_relaxed"

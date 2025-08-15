@@ -35,6 +35,7 @@ The source code for the compilable software is included, and can be used to buil
 ## Setting up an environment for running VoroMarmotte
 
 VoroMarmotte requires PyTorch, NumPy, and R.
+If relaxation option is used, VoroMarmotte additionally requires OpenMM and PDBFixer.
 
 Below is an example of setting up a suitable environment:
 
@@ -47,18 +48,9 @@ source ~/miniconda3/bin/activate
 # import and activate provided environment
 conda env create --file ./env/voromarmotte-env.yaml
 conda activate voromarmotte-env
-
-# if you do not have R installed in your system, install it (below is an example for Ubuntu)
-sudo apt-get install r-base
 ```
 
-### Optionally, setting up an environment for relaxing with OpenMM
-
-In case the `--relax-with-openmm` option will be used, an environment for running OpenMM can be set up:
-
-```bash
-conda env create --file ./env/openmm-env.yaml
-```
+More information about creatin/loading/removing the `voromarmotte-env` environment is available [here](./env/voromarmotte-env-info.md). 
 
 # Running the VoroMarmotte command-line tool
 

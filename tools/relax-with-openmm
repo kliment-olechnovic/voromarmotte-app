@@ -354,7 +354,7 @@ then
 	exit 1
 fi
 
-if [ -z "$CONDA_DEFAULT_ENV" ] || [ "$CONDA_DEFAULT_ENV" != "$CONDA_ENV" ]
+if [ -z "$CONDA_DEFAULT_ENV" ]
 then
 	if [ -z "$CONDA_PATH" ]
 	then
