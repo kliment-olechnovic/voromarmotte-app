@@ -7,7 +7,7 @@ cd "$SCRIPTDIR"
 rm -rf "./output"
 mkdir -p "./output"
 
-find "./input/" -type f -name '*.pdb' \
+find "./input/set1/" -type f -name '*.pdb' \
 | ../voromarmotte \
   --input _list \
   --conda-path "${HOME}/miniconda3" \
@@ -34,7 +34,7 @@ find "./input/" -type f -name '*.pdb' \
   --rebuild-sidechains true \
 > "./output/all_global_scores_for_rebuilt_inter_chain_contacts.txt"
 
-find "./input/" -type f -name '*.pdb' \
+find "./input/set1/" -type f -name '*.pdb' \
 | ../voromarmotte \
   --input _list \
   --conda-path "${HOME}/miniconda3" \
@@ -45,7 +45,7 @@ find "./input/" -type f -name '*.pdb' \
   --mutate-sidechains 'any 55 GLY' \
 > "./output/all_global_scores_for_rebuilt_mutated_inter_chain_contacts.txt"
 
-find "./input/" -type f -name '*.pdb' \
+find "./input/set1/" -type f -name '*.pdb' \
 | ../voromarmotte \
   --input _list \
   --processors 4 \
@@ -56,7 +56,7 @@ find "./input/" -type f -name '*.pdb' \
   --output-per-residue "./output/local_scores_per_residue_for_inter_chain_contacts_of_INPUTNAME.txt" \
   --output-table-file "./output/all_global_scores_for_inter_chain_contacts_run2.txt"
   
-find "./input/" -type f -name '*.pdb' \
+find "./input/set1/" -type f -name '*.pdb' \
 | ../voromarmotte \
   --input _list \
   --processors 4 \
@@ -68,7 +68,7 @@ find "./input/" -type f -name '*.pdb' \
   --output-per-residue "./output/local_scores_per_residue_for_all_contacts_of_INPUTNAME.txt" \
 > /dev/null
 
-find "./input/" -type f -name '*.pdb' \
+find "./input/set1/" -type f -name '*.pdb' \
 | while read -r INFILE
 do
 	INPUTNAME="$(basename ${INFILE} .pdb)"
