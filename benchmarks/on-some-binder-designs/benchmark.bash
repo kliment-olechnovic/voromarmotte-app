@@ -95,7 +95,18 @@ find ./input/ -type f -name '*.pdb' \
   --subselect-contacts '[-inter-chain]' \
   --mutate-sidechains 'interface-A-ALA' \
   --output-table-file "$OUTFILE" \
-  --processors 20 \
+  --processors 20
+
+OUTFILE="./output/global_scores_whole_chainA_mutated_to_ALA.txt"
+
+[ -s "$OUTFILE" ] || \
+find ./input/ -type f -name '*.pdb' \
+| ../../voromarmotte \
+  --input _list \
+  --subselect-contacts '[-a1 [-chain A]]' \
+  --mutate-sidechains 'interface-A-ALA' \
+  --output-table-file "$OUTFILE" \
+  --processors 20
 
 ################################################################################
 
@@ -109,7 +120,19 @@ find ./input/ -type f -name '*.pdb' \
   --mutate-sidechains 'interface-A-ALA' \
   --relax-with-openmm basic \
   --output-table-file "$OUTFILE" \
-  --processors 20 \
+  --processors 20
+
+OUTFILE="./output/global_scores_whole_chainA_mutated_to_ALA_and_relaxed.txt"
+
+[ -s "$OUTFILE" ] || \
+find ./input/ -type f -name '*.pdb' \
+| ../../voromarmotte \
+  --input _list \
+  --subselect-contacts '[-a1 [-chain A]]' \
+  --mutate-sidechains 'interface-A-ALA' \
+  --relax-with-openmm basic \
+  --output-table-file "$OUTFILE" \
+  --processors 20
 
 ################################################################################
 
@@ -122,7 +145,18 @@ find ./input/ -type f -name '*.pdb' \
   --subselect-contacts '[-inter-chain]' \
   --mutate-sidechains 'interface-A-every' \
   --output-table-file "$OUTFILE" \
-  --processors 20 \
+  --processors 20
+
+OUTFILE="./output/global_scores_whole_chainA_mutated_to_every.txt"
+
+[ -s "$OUTFILE" ] || \
+find ./input/ -type f -name '*.pdb' \
+| ../../voromarmotte \
+  --input _list \
+  --subselect-contacts '[-a1 [-chain A]]' \
+  --mutate-sidechains 'interface-A-every' \
+  --output-table-file "$OUTFILE" \
+  --processors 20
 
 ################################################################################
 
@@ -136,7 +170,19 @@ find ./input/ -type f -name '*.pdb' \
   --mutate-sidechains 'interface-A-every' \
   --relax-with-openmm basic \
   --output-table-file "$OUTFILE" \
-  --processors 20 \
+  --processors 20
+
+OUTFILE="./output/global_scores_whole_chainA_mutated_to_every_and_relaxed.txt"
+
+[ -s "$OUTFILE" ] || \
+find ./input/ -type f -name '*.pdb' \
+| ../../voromarmotte \
+  --input _list \
+  --subselect-contacts '[-a1 [-chain A]]' \
+  --mutate-sidechains 'interface-A-every' \
+  --relax-with-openmm basic \
+  --output-table-file "$OUTFILE" \
+  --processors 20
 
 ################################################################################
 
