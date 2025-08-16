@@ -16,7 +16,19 @@ find ./input/ -type f -name '*.pdb' \
   --input _list \
   --subselect-contacts '[-inter-chain]' \
   --output-table-file "$OUTFILE" \
-  --processors 20 \
+  --output-per-residue ./output/local_scores_inter_chain_per_residue_for_INPUTNAME.txt \
+  --processors 4
+
+OUTFILE="./output/global_scores_whole_chainA.txt"
+
+[ -s "$OUTFILE" ] || \
+find ./input/ -type f -name '*.pdb' \
+| ../../voromarmotte \
+  --input _list \
+  --subselect-contacts '[-a1 [-chain A]]' \
+  --output-table-file "$OUTFILE" \
+  --output-per-residue ./output/local_scores_whole_chainA_per_residue_for_INPUTNAME.txt \
+  --processors 4
 
 ################################################################################
 
@@ -29,7 +41,20 @@ find ./input/ -type f -name '*.pdb' \
   --subselect-contacts '[-inter-chain]' \
   --rebuild-sidechains true \
   --output-table-file "$OUTFILE" \
-  --processors 20 \
+  --output-per-residue ./output/local_scores_inter_chain_per_residue_for_INPUTNAME.txt \
+  --processors 4
+  
+OUTFILE="./output/global_scores_whole_chainA_rebuilt.txt"
+
+[ -s "$OUTFILE" ] || \
+find ./input/ -type f -name '*.pdb' \
+| ../../voromarmotte \
+  --input _list \
+  --subselect-contacts '[-a1 [-chain A]]' \
+  --rebuild-sidechains true \
+  --output-table-file "$OUTFILE" \
+  --output-per-residue ./output/local_scores_whole_chainA_per_residue_for_INPUTNAME.txt \
+  --processors 4
 
 ################################################################################
 
@@ -43,7 +68,21 @@ find ./input/ -type f -name '*.pdb' \
   --rebuild-sidechains true \
   --relax-with-openmm basic \
   --output-table-file "$OUTFILE" \
-  --processors 20 \
+  --output-per-residue ./output/local_scores_inter_chain_per_residue_for_INPUTNAME.txt \
+  --processors 4
+
+OUTFILE="./output/global_scores_whole_chainA_rebuilt_relaxed.txt"
+
+[ -s "$OUTFILE" ] || \
+find ./input/ -type f -name '*.pdb' \
+| ../../voromarmotte \
+  --input _list \
+  --subselect-contacts '[-a1 [-chain A]]' \
+  --rebuild-sidechains true \
+  --relax-with-openmm basic \
+  --output-table-file "$OUTFILE" \
+  --output-per-residue ./output/local_scores_whole_chainA_per_residue_for_INPUTNAME.txt \
+  --processors 4
 
 ################################################################################
 
