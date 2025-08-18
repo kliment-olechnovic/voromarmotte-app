@@ -1,4 +1,0 @@
-ID                           area_pseudoenergy  area_total  area_expected_to_persist  area_goodness_pseudoenergy  best_core_pseudoenergy  best_core_area
-design1_rebuilt_relaxed.pdb  -1137.99353064548  1317.48417  863.609958664205          -1891.45574719766           -1304.59626094933       1192.11292
-design2_rebuilt_relaxed.pdb  -281.809831345252  1402.87005  754.26344820074           -1498.63555290248           -938.022152050967       786.63585
-design3_rebuilt_relaxed.pdb  457.574840337744   1311.86569  563.603289847889          -1010.48611298343           -464.269609292986       560.14001

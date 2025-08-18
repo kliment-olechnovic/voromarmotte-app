@@ -32,7 +32,7 @@ Examples:
     
     ./voromarmotte  --input ./model.pdb --subselect-contacts '[-inter-chain]' > ./table.txt
     
-    ./voromarmotte  --input ./model.pdb --output-per-contact ./table_of_contacts.txt > ./table.txt
+    ./voromarmotte  --input ./model.pdb --subselect-contacts '[-a1 [-chain A]]' --output-per-contact ./table_of_contacts.txt > ./table.txt
     
     find ./models/ -type f -name '*.pdb' | ./voromarmotte --input _list --subselect-contacts '[-inter-chain]' > ./table.txt
 
@@ -169,10 +169,25 @@ fi
 
 ################################################################################
 
+if [ "$REBUILD_SIDECHAINS" == "no" ]
+then
+	REBUILD_SIDECHAINS="false"
+fi
+
 if [ "$REBUILD_SIDECHAINS" != "false" ] && [ "$REBUILD_SIDECHAINS" != "true" ]
 then
 	echo >&2 "Error: invalid value '${REBUILD_SIDECHAINS}' for the side-chain rebuilding flag, must be 'false' or 'true'"
 	exit 1
+fi
+
+if [ "$MUTATE_SIDECHAINS" == "no" ] || [ "$MUTATE_SIDECHAINS" == "false" ]
+then
+	MUTATE_SIDECHAINS=""
+fi
+
+if [ "$RELAX_WITH_OPENMM" == "no" ] || [ "$RELAX_WITH_OPENMM" == "false" ]
+then
+	RELAX_WITH_OPENMM=""
 fi
 
 ################################################################################
@@ -425,11 +440,22 @@ INPUTMODIFICATION="$(echo ${INPUTMODIFICATION} | sed 's/^no_//')"
 ################################################################################
 
 OUTPUT_ATOMS_FILE="$(substitute_in_string "${OUTPUT_ATOMS_FILE}" "INPUTNAME" "${INFILE}")"
+OUTPUT_ATOMS_FILE="$(substitute_in_string "${OUTPUT_ATOMS_FILE}" "MODIFIED" "${INPUTMODIFICATION}")"
+
 OUTPUT_PER_CONTACT="$(substitute_in_string "${OUTPUT_PER_CONTACT}" "INPUTNAME" "${INFILE}")"
+OUTPUT_PER_CONTACT="$(substitute_in_string "${OUTPUT_PER_CONTACT}" "MODIFIED" "${INPUTMODIFICATION}")"
+
 OUTPUT_PER_RESIDUE="$(substitute_in_string "${OUTPUT_PER_RESIDUE}" "INPUTNAME" "${INFILE}")"
+OUTPUT_PER_RESIDUE="$(substitute_in_string "${OUTPUT_PER_RESIDUE}" "MODIFIED" "${INPUTMODIFICATION}")"
+
 OUTPUT_TABLE_FILE="$(substitute_in_string "${OUTPUT_TABLE_FILE}" "INPUTNAME" "${INFILE}")"
+OUTPUT_TABLE_FILE="$(substitute_in_string "${OUTPUT_TABLE_FILE}" "MODIFIED" "${INPUTMODIFICATION}")"
+
 OUTPUT_VSCRIPT="$(substitute_in_string "${OUTPUT_VSCRIPT}" "INPUTNAME" "${INFILE}")"
+OUTPUT_VSCRIPT="$(substitute_in_string "${OUTPUT_VSCRIPT}" "MODIFIED" "${INPUTMODIFICATION}")"
+
 OUTPUT_PYMOL_VSCRIPT="$(substitute_in_string "${OUTPUT_PYMOL_VSCRIPT}" "INPUTNAME" "${INFILE}")"
+OUTPUT_PYMOL_VSCRIPT="$(substitute_in_string "${OUTPUT_PYMOL_VSCRIPT}" "MODIFIED" "${INPUTMODIFICATION}")"
 
 if [ -n "$OUTPUT_ATOMS_FILE" ]
 then
@@ -589,11 +615,21 @@ then
 		{
 			echo "import ${INFILE}"
 			cat "${TMPLDIR}/vscript.vs"
-			echo "export-contacts-as-pymol-cgo -use [_visible] -name ${PYMOL_NAME} -file ${OUTPUT_PYMOL_VSCRIPT}"
+			echo "export-contacts-as-pymol-cgo -use [_visible] -name ${PYMOL_NAME} -file ${TMPLDIR}/pymol_draw.py"
+			echo "export-contacts-as-pymol-cgo -use (([_visible]) and ([-inter-chain])) -name ${PYMOL_NAME}_ic -file ${TMPLDIR}/pymol_draw_ic.py"
 		} > "${TMPLDIR}/vscript_to_pymol.vs"
 		
 		echo "voronota_source('-file', '${TMPLDIR}/vscript_to_pymol.vs');" \
-		| ${SCRIPTDIR}/tools/voronota-js 
+		| ${SCRIPTDIR}/tools/voronota-js
+		
+		{
+			cat "${TMPLDIR}/pymol_draw.py"
+			if [ -s "${TMPLDIR}/pymol_draw_ic.py" ] && [ "$(cat ${TMPLDIR}/pymol_draw_ic.py | wc -l)" -lt "$(cat ${TMPLDIR}/pymol_draw.py | wc -l)" ]
+			then
+				cat "${TMPLDIR}/pymol_draw_ic.py"
+			fi
+		} \
+		> "$OUTPUT_PYMOL_VSCRIPT"
 	fi
 fi
 
