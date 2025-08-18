@@ -15,25 +15,6 @@ find "./input/set1/" -type f -name '*.pdb' \
   --processors 4 \
 > "./output/all_global_scores_for_all_contacts.txt"
 
-find "./input/" -type f -name '*.pdb' \
-| ../voromarmotte \
-  --input _list \
-  --conda-path "${HOME}/miniconda3" \
-  --conda-env "voromarmotte-env" \
-  --processors 4 \
-  --subselect-contacts '[-inter-chain]' \
-> "./output/all_global_scores_for_inter_chain_contacts.txt"
-
-find "./input/" -type f -name '*.pdb' \
-| ../voromarmotte \
-  --input _list \
-  --conda-path "${HOME}/miniconda3" \
-  --conda-env "voromarmotte-env" \
-  --processors 4 \
-  --subselect-contacts '[-inter-chain]' \
-  --rebuild-sidechains true \
-> "./output/all_global_scores_for_rebuilt_inter_chain_contacts.txt"
-
 find "./input/set1/" -type f -name '*.pdb' \
 | ../voromarmotte \
   --input _list \
@@ -73,25 +54,6 @@ find "./input/set1/" -type f -name '*.pdb' \
 do
 	INPUTNAME="$(basename ${INFILE} .pdb)"
 
-	{
-cat << EOF
-${INFILE} A 48 ALA
-${INFILE} A 48 LEU
-${INFILE} A 48 GLY
-${INFILE} A 48 PHE
-${INFILE} A 48 TRP
-${INFILE} A 48 ARG
-${INFILE} A 48 CYS
-EOF
-	} \
-	| ../voromarmotte \
-	  --input _list \
-	  --mutate-sidechains _list \
-	  --conda-path "${HOME}/miniconda3" \
-	  --subselect-contacts '[-inter-chain]' \
-	  --processors 6 \
-	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_mutated_${INPUTNAME}.txt"
-
 	../voromarmotte \
 	  --input "$INFILE" \
 	  --processors 6 \
@@ -102,9 +64,8 @@ EOF
 	../voromarmotte \
 	  --input "$INFILE" \
 	  --processors 6 \
-	  --subselect-contacts '[-inter-chain]' \
 	  --mutate-sidechains 'interface-A-ALA' \
-	  --output-table-file "./output/global_scores_for_inter_chain_contacts_of_interface_residues_mutated_to_ALA_${INPUTNAME}.txt"
+	  --output-table-file "./output/global_scores_for_all_contacts_of_interface_residues_mutated_to_ALA_${INPUTNAME}.txt"
 done
 
 

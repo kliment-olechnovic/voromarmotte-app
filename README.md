@@ -109,17 +109,16 @@ find "./tests/input/" -type f -name '*.pdb' \
   --input _list \
   --conda-path ~/miniconda3 \
   --conda-env "voromarmotte-env" \
-  --processors 4 \
-  --subselect-contacts "[-inter-chain]"
+  --processors 4
 ```
 
 gives
 
 ```
-ID          area_pseudoenergy  area_total  area_expected_to_persist  area_goodness_pseudoenergy  best_core_pseudoenergy  best_core_area
-target.pdb  -1330.24266560559  1043.34122  736.036934416612          -1836.75303518038           -1465.40963660073       963.03436
-model2.pdb  -192.57424709485   971.6527    514.899135986745          -990.634743868687           -478.757485155433       732.5084
-model1.pdb  572.000273266142   972.36053   399.674485370467          -668.186200634224           -17.1140646562708       721.16258
+ID          modified  pseudoenergy      area        best_core_pseudoenergy  best_core_area  ic_fraction        ic_area_pseudoenergy  ic_area_total  ic_best_core_pseudoenergy  ic_best_core_area
+target.pdb  no        -12702.636336671  8719.37648  -13048.345726246        7978.57775      0.11965777855712   -1330.24276218966     1043.34122     -1465.40969052445          963.03436
+model2.pdb  no        4095.25251344407  8176.68624  -105.653140800416       1408.45828      0.118832088144304  -192.574100796512     971.6527       -478.757380500359          732.5084
+model1.pdb  no        6819.02936168173  8778.85413  156.932653724586        1775.00483      0.110761668390998  572.000174186728      972.36053      -17.1141399143923          721.16258
 ```
 
 # Visualization example
