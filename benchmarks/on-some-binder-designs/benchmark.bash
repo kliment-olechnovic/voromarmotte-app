@@ -90,7 +90,6 @@ do
 	
 	[ -s "$MUTATIONSCORESFILE" ] || \
 	cat "$REQUESTSFILE" \
-	| head -4 \
 	| ../../voromarmotte \
 	  --input _list \
 	  --mutate-sidechains '_list' \
