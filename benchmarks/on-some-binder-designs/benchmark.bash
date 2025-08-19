@@ -96,6 +96,18 @@ do
 	  --subselect-contacts '[-a1 [-chain A]]' \
 	  --output-table-file "$MUTATIONSCORESFILE" \
 	  --processors 30
+	
+	VISFILE="${OUTDIR}/show_${STRUCTNAME}_mutated_iface.vs"
+	
+	[ -s "$VISFILE" ] || \
+	../../voromarmotte \
+	  --input "$STRUCTFILE" \
+	  --mutate-sidechains "$(cat ${MUTATIONSCORESFILE} | awk '{if(NR==2){print $2}}' | sed 's/^rebuilt_mutated_//' )" \
+	  --subselect-contacts '[-inter-chain]' \
+	  --output-vscript "$VISFILE" \
+	  --output-pymol-vscript "${VISFILE}.py" \
+	  --output-atoms-file "${VISFILE}.atoms.pdb" \
+	> "${VISFILE}.scores.txt"
 done
 
 ################################################################################

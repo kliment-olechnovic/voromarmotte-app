@@ -1,0 +1,2 @@
+ID           modified                            pseudoenergy       area        best_core_pseudoenergy  best_core_area  ic_fraction
+design1.pdb  rebuilt_mutated_A_27_GLY_A_161_PHE  -651.506653143951  1236.27615  -868.262483713008       858.73411       1

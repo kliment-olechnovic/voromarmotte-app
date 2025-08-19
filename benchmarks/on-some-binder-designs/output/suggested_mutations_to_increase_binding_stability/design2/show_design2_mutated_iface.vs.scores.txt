@@ -1,0 +1,2 @@
+ID           modified                                     pseudoenergy       area        best_core_pseudoenergy  best_core_area  ic_fraction
+design2.pdb  rebuilt_mutated_A_76_TYR_A_71_TYR_A_123_GLN  -790.263651848026  1370.88676  -1149.81430966773       725.20501       1

@@ -1,0 +1,2 @@
+ID           modified                                    pseudoenergy     area       best_core_pseudoenergy  best_core_area  ic_fraction
+design3.pdb  rebuilt_mutated_A_45_TRP_A_28_TYR_A_20_TYR  133.72559189441  1278.2754  -745.821901711928       621.40609       1
