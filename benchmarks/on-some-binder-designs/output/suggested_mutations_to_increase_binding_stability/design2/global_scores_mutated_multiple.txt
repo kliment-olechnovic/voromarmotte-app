@@ -1,0 +1,5 @@
+ID           modified                            pseudoenergy       area        best_core_pseudoenergy  best_core_area  ic_fraction        ic_area_pseudoenergy  ic_area_total  ic_best_core_pseudoenergy  ic_best_core_area
+design2.pdb  rebuilt_mutated_A_76_TYR_A_136_TRP  -9661.00784450368  7429.42331  -10313.6810210153       6502.73322      0.191135458399395  -659.015706629089     1420.02623     -1168.45283148848          730.67616
+design2.pdb  rebuilt_mutated_A_76_TYR_A_71_TYR   -9613.87179700079  7390.36827  -10290.8033257747       6451.26927      0.190657075334082  -687.20886368562      1409.026       -1133.66501877293          725.07637
+design2.pdb  rebuilt_mutated_A_76_TYR_A_104_ARG  -9572.94144231248  7446.20745  -10229.4471234301       6543.03943      0.190427518910986  -542.485023735816     1417.96281     -1088.87063681351          734.97507
+design2.pdb  rebuilt_mutated_A_76_TYR_A_63_ASP   -9556.59143099004  7327.92098  -10247.2424326726       6390.04251      0.189828845561596  -727.260433023082     1391.05078     -1144.03518988995          906.32973

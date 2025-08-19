@@ -62,3 +62,44 @@ find ./input/ -type f -name '*.pdb' \
 
 ################################################################################
 
+find ./input/ -type f -name '*.pdb' \
+| while read -r STRUCTFILE
+do
+	STRUCTNAME="$(basename ${STRUCTFILE} .pdb)"
+	OUTDIR="./output/suggested_mutations_to_increase_binding_stability/${STRUCTNAME}"
+	
+	mkdir -p "$OUTDIR"
+	
+	cat "./output/global_scores_mutated_to_every.txt" \
+	| awk -v id=$(basename ${STRUCTFILE}) '{if($1=="ID" || ($1==id && $2=="rebuilt")){print $0}}' \
+	> "${OUTDIR}/global_scores_nonmutated.txt"
+	
+	cat "./output/global_scores_mutated_to_every.txt" \
+	| awk -v id=$(basename ${STRUCTFILE}) '{if($1=="ID" || ($1==id && $2!="rebuilt")){print $0}}' \
+	> "${OUTDIR}/global_scores_mutated_single.txt"
+	
+	REQUESTSFILE="${OUTDIR}/multiple_mutation_requests.txt"
+	
+	[ -s "$REQUESTSFILE" ] || \
+	../../meta/suggest-mutations-to-increase-binding-stability \
+	  --input-table "./output/global_scores_mutated_to_every.txt" \
+	  --file-id "${STRUCTFILE}" \
+	  --output-dir "${OUTDIR}"
+	
+	MUTATIONSCORESFILE="${OUTDIR}/global_scores_mutated_multiple.txt"
+	
+	[ -s "$MUTATIONSCORESFILE" ] || \
+	cat "$REQUESTSFILE" \
+	| head -4 \
+	| ../../voromarmotte \
+	  --input _list \
+	  --mutate-sidechains '_list' \
+	  --subselect-contacts '[-a1 [-chain A]]' \
+	  --output-table-file "$MUTATIONSCORESFILE" \
+	  --processors 30
+done
+
+################################################################################
+
+
+
