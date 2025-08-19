@@ -17,7 +17,7 @@ Examples:
     ./meta/suggest-mutations-to-increase-binding-stability \
       --input-table "./benchmarks/on-some-binder-designs/output/global_scores_mutated_to_every.txt" \
       --id "design2.pdb" \
-      --output-dir "./benchmarks/on-some-binder-designs/output/mutation_suggestions_for_design2"
+      --output-dir "./benchmarks/on-some-binder-designs/output/mutation_suggestions/design2"
 
 EOF
 exit 1
@@ -145,26 +145,24 @@ df$pseudoenergy_diff_full=(df$pseudoenergy-odf$pseudoenergy);
 df$pseudoenergy_diff_ic=(df$ic_area_pseudoenergy-odf$ic_area_pseudoenergy);
 df$pseudoenergy_diff_non_ic=(df$non_ic_area_pseudoenergy-odf$non_ic_area_pseudoenergy);
 
-confident_sel=which(df$pseudoenergy_diff_full<0 & df$pseudoenergy_diff_ic<0 & df$pseudoenergy_diff_non_ic<0);
-if(length(confident_sel)<1){stop("No confident selections available");}
+sdf=df[which(df$modified!="original"),];
 
-sdf=df[confident_sel,];
+sdf$priority_weight=(0-sdf$pseudoenergy_diff_full)+(0-sdf$pseudoenergy_diff_ic)*2.0;
 
-sdf$weight=(0-sdf$pseudoenergy_diff_full)+(0-sdf$pseudoenergy_diff_ic);
-sdf$weight[which(sdf$weight<0)]=0;
+sdf$priority_weight[which(sdf$pseudoenergy_diff_full>0 | sdf$pseudoenergy_diff_ic>0)]=0;
 
 sdf$chain_resnum_resname=sdf$modified;
 
-result=sdf[,c("chain_resnum_resname", "weight", "pseudoenergy_diff_full", "pseudoenergy_diff_ic", "pseudoenergy_diff_non_ic")];
+result=sdf[,c("chain_resnum_resname", "priority_weight", "pseudoenergy_diff_full", "pseudoenergy_diff_ic", "pseudoenergy_diff_non_ic")];
 
-result=result[order(0-result$weight),];
+result=result[order(0-result$priority_weight, result$pseudoenergy_diff_full),];
 
 write.table(result, file=outfile, row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
 EOF
 
 if [ ! -s "${TMPLDIR}/selection" ]
 then
-	echo >&2 "Error: failed to select confident mutations for ID='${INPUT_ID}' from the input table file '$GLOBAL_SCORES_TABLE'"
+	echo >&2 "Error: failed to select useful mutations for ID='${INPUT_ID}' from the input table file '$GLOBAL_SCORES_TABLE'"
 	exit 1
 fi
 
@@ -175,18 +173,24 @@ cat "${TMPLDIR}/selection" | head -1 | sed 's/chain_resnum_resname/chain resnum 
 cat "${TMPLDIR}/selection" | tail -n +2 | tr '_' ' '
 } > "${TMPLDIR}/mutations"
 
-R --vanilla --args "${TMPLDIR}/mutations" "${TMPLDIR}/mutations_annotated" > /dev/null << 'EOF'
+R --vanilla --args "${TMPLDIR}/mutations" "${TMPLDIR}/mutations_annotated" "${TMPLDIR}/mutations_annotated.png" > /dev/null << 'EOF'
 args=commandArgs(TRUE);
 infile=args[1];
 outfile=args[2];
+plotoutfile=args[3];
 df=read.table(infile, header=TRUE, stringsAsFactors=FALSE);
 comboname=paste0(df$chain, "_", df$resnum);
 df$nonredundant=0;
 df$nonredundant[!duplicated(comboname)]=1;
 write.table(df, file=outfile, row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
 all_pseudoenergies=c(df$pseudoenergy_diff_full, df$pseudoenergy_diff_ic);
-#plot(x=1:nrow(df), y=df$pseudoenergy_diff_full, ylim=c(min(all_pseudoenergies), max(all_pseudoenergies)), xlab="Rank", ylab="Pseudo-energy difference", main="", col="black");
-#points(x=1:nrow(df), y=df$pseudoenergy_diff_ic, col="red");
+png(plotoutfile, width=10, height=6, unit="in", res=100);
+plot(x=1:nrow(df), y=df$pseudoenergy_diff_full, ylim=c(min(all_pseudoenergies), max(all_pseudoenergies)), xlab="Mutation priority rank", ylab="Pseudo-energy difference", main="Mutations ordered by priority_weight", col="black", pch=2);
+points(x=1:nrow(df), y=df$pseudoenergy_diff_ic, col="red", pch=6);
+abline(h=0);
+abline(v=min(which(df$priority_weight<=0)));
+legend("topleft", legend=c("Full pseudo-energy difference", "Inter-chain pseudoenergy difference"), col=c("black", "red"), pch=c(2, 6));
+dev.off();
 EOF
 
 if [ ! -s "${TMPLDIR}/mutations_annotated" ]
@@ -197,8 +201,10 @@ fi
 
 ################################################################################
 
+mkdir -p "$OUTPUT_DIR"
 
+mv "${TMPLDIR}/mutations_annotated" "${OUTPUT_DIR}/mutations_table.tsv"
 
-cat "${TMPLDIR}/mutations_annotated" | column -t
+mv "${TMPLDIR}/mutations_annotated.png" "${OUTPUT_DIR}/plot_of_ordered_mutations.png"
 
 
