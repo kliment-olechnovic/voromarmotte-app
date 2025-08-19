@@ -8,15 +8,18 @@ cat >&2 << 'EOF'
 
 Options:
     --input-table             string  *  input file path to read a mutation scanning results table
-    --id                      string  *  value to match the ID column in the input table
+    --file-id                 string  *  file path or name to match the ID column in the input table
     --output-dir              string     output directory path to write results
     --help | -h                          flag to display help message and exit
+
+Standard output:
+    list of generated files
 
 Examples:
 
     ./meta/suggest-mutations-to-increase-binding-stability \
       --input-table "./benchmarks/on-some-binder-designs/output/global_scores_mutated_to_every.txt" \
-      --id "design2.pdb" \
+      --file-id "./benchmarks/on-some-binder-designs/input/design2.pdb" \
       --output-dir "./benchmarks/on-some-binder-designs/output/mutation_suggestions/design2"
 
 EOF
@@ -34,7 +37,7 @@ readonly ZEROARG=$0
 ALLARGS=("$@")
 
 GLOBAL_SCORES_TABLE=""
-INPUT_ID=""
+FULL_INPUT_ID=""
 OUTPUT_DIR=""
 HELP_MODE="false"
 
@@ -48,8 +51,8 @@ do
 		GLOBAL_SCORES_TABLE="$OPTARG"
 		shift
 		;;
-	--id)
-		INPUT_ID="$OPTARG"
+	--file-id)
+		FULL_INPUT_ID="$OPTARG"
 		shift
 		;;
 	--output-dir)
@@ -79,11 +82,13 @@ then
 	exit 1
 fi
 
-if [ -z "$INPUT_ID" ]
+if [ -z "$FULL_INPUT_ID" ]
 then
 	echo >&2 "Error: no input ID provided"
 	exit 1
 fi
+
+INPUT_ID="$(basename ${FULL_INPUT_ID})"
 
 if [ -z "$OUTPUT_DIR" ]
 then
@@ -176,15 +181,17 @@ cat "${TMPLDIR}/selection" | tail -n +2 | tr '_' ' '
 R --vanilla --args "${TMPLDIR}/mutations" "${TMPLDIR}/mutations_annotated" "${TMPLDIR}/mutations_annotated.png" > /dev/null << 'EOF'
 args=commandArgs(TRUE);
 infile=args[1];
-outfile=args[2];
-plotoutfile=args[3];
+outfile_main=args[2];
+outfile_plot=args[3];
+
 df=read.table(infile, header=TRUE, stringsAsFactors=FALSE);
 comboname=paste0(df$chain, "_", df$resnum);
 df$nonredundant=0;
 df$nonredundant[!duplicated(comboname)]=1;
-write.table(df, file=outfile, row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
+write.table(df, file=outfile_main, row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
+
 all_pseudoenergies=c(df$pseudoenergy_diff_full, df$pseudoenergy_diff_ic);
-png(plotoutfile, width=10, height=6, unit="in", res=100);
+png(outfile_plot, width=10, height=6, unit="in", res=100);
 plot(x=1:nrow(df), y=df$pseudoenergy_diff_full, ylim=c(min(all_pseudoenergies), max(all_pseudoenergies)), xlab="Mutation priority rank", ylab="Pseudo-energy difference", main="Mutations ordered by priority_weight", col="black", pch=2);
 points(x=1:nrow(df), y=df$pseudoenergy_diff_ic, col="red", pch=6);
 abline(h=0);
@@ -201,10 +208,65 @@ fi
 
 ################################################################################
 
+R --vanilla --args "${TMPLDIR}/mutations_annotated" "${TMPLDIR}/mutations_subsets" > /dev/null << 'EOF'
+args=commandArgs(TRUE);
+infile=args[1];
+outfile_main=args[2];
+
+df=read.table(infile, header=TRUE, stringsAsFactors=FALSE);
+df$comboname=paste0(df$chain, "_", df$resnum);
+df$fullname=paste0(df$chain, "_", df$resnum, "_", df$resname);
+
+unique_combonames=df$comboname[!duplicated(df$comboname)];
+N_uniq=min(c(6, length(unique_combonames)));
+unique_combonames=unique_combonames[1:N_uniq];
+df=df[which(is.element(df$comboname, unique_combonames)),];
+
+N=min(c(12, nrow(df)));
+df=df[1:N,];
+m=expand.grid(rep(list(c(1,0)), N));
+M=(nrow(m)-1);
+
+mutations=c();
+sizes=c();
+weights=c();
+for(i in 1:M)
+{
+	v=(as.numeric(m[i,])==1);
+	sdf=df[v,];
+	sdf=sdf[!duplicated(sdf$comboname),]
+	size=nrow(sdf);
+	if(size>1)
+	{
+		mutations=c(mutations, paste(sdf$fullname, collapse="_"));
+		sizes=c(sizes, size);
+		weights=c(weights, sum(sdf$priority_weight));
+	}
+}
+
+result=data.frame(mutations=mutations, count=sizes, weight=weights);
+result=result[order(result$count, 0-result$weight),];
+result=result[!duplicated(result$mutations),];
+result=result[1:min(c(100, nrow(result))),];
+
+write.table(result[,"mutations"], file=outfile_main, row.names=FALSE, col.names=FALSE, quote=FALSE, sep="\t");
+EOF
+
+cat "${TMPLDIR}/mutations_subsets" | sed "s|^|${FULL_INPUT_ID} |" > "${TMPLDIR}/mutation_requests"
+
+################################################################################
+
 mkdir -p "$OUTPUT_DIR"
 
 mv "${TMPLDIR}/mutations_annotated" "${OUTPUT_DIR}/mutations_table.tsv"
 
 mv "${TMPLDIR}/mutations_annotated.png" "${OUTPUT_DIR}/plot_of_ordered_mutations.png"
+
+mv "${TMPLDIR}/mutation_requests" "${OUTPUT_DIR}/multiple_mutation_requests.txt"
+
+ls "${OUTPUT_DIR}/mutations_table.tsv"
+ls "${OUTPUT_DIR}/plot_of_ordered_mutations.png"
+ls "${OUTPUT_DIR}/multiple_mutation_requests.txt"
+
 
 
