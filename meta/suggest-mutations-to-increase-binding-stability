@@ -1,0 +1,204 @@
+#!/bin/bash
+
+function print_help_and_exit
+{
+cat >&2 << 'EOF'
+
+'suggest-mutations-to-increase-binding-stability' analyzes mutation scanning results produced by 'voromarmotte'
+
+Options:
+    --input-table             string  *  input file path to read a mutation scanning results table
+    --id                      string  *  value to match the ID column in the input table
+    --output-dir              string     output directory path to write results
+    --help | -h                          flag to display help message and exit
+
+Examples:
+
+    ./meta/suggest-mutations-to-increase-binding-stability \
+      --input-table "./benchmarks/on-some-binder-designs/output/global_scores_mutated_to_every.txt" \
+      --id "design2.pdb" \
+      --output-dir "./benchmarks/on-some-binder-designs/output/mutation_suggestions_for_design2"
+
+EOF
+exit 1
+}
+
+################################################################################
+
+export LANG=C
+export LC_ALL=C
+
+SCRIPTDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+readonly ZEROARG=$0
+ALLARGS=("$@")
+
+GLOBAL_SCORES_TABLE=""
+INPUT_ID=""
+OUTPUT_DIR=""
+HELP_MODE="false"
+
+while [[ $# > 0 ]]
+do
+	OPTION="$1"
+	OPTARG="$2"
+	shift
+	case $OPTION in
+	--input-table)
+		GLOBAL_SCORES_TABLE="$OPTARG"
+		shift
+		;;
+	--id)
+		INPUT_ID="$OPTARG"
+		shift
+		;;
+	--output-dir)
+		OUTPUT_DIR="$OPTARG"
+		shift
+		;;
+	-h|--help)
+		HELP_MODE="true"
+		;;
+	*)
+		echo >&2 "Error: invalid command line option '$OPTION'"
+		exit 1
+		;;
+	esac
+done
+
+if [ "$HELP_MODE" == "true" ]
+then
+	print_help_and_exit
+fi
+
+################################################################################
+
+if [ -z "$GLOBAL_SCORES_TABLE" ]
+then
+	echo >&2 "Error: no input table file provided"
+	exit 1
+fi
+
+if [ -z "$INPUT_ID" ]
+then
+	echo >&2 "Error: no input ID provided"
+	exit 1
+fi
+
+if [ -z "$OUTPUT_DIR" ]
+then
+	echo >&2 "Error: no output directory provided"
+	exit 1
+fi
+
+if [ ! -s "$GLOBAL_SCORES_TABLE" ]
+then
+	echo >&2 "Error: input table file '$GLOBAL_SCORES_TABLE' does not exist"
+	exit 1
+fi
+
+NUM_OF_ROWS="$(cat ${GLOBAL_SCORES_TABLE} | awk -v id=${INPUT_ID} '{if(NR>1 && $1==id){print $1}}' | wc -l)"
+
+if [ "$NUM_OF_ROWS" -eq "0" ]
+then
+	echo >&2 "Error: no rows with ID='${INPUT_ID}' in the input table file '$GLOBAL_SCORES_TABLE'"
+	exit 1
+fi
+
+if [ "$NUM_OF_ROWS" -lt "2" ]
+then
+	echo >&2 "Error: not enough rows with ID='${INPUT_ID}' in the input table file '$GLOBAL_SCORES_TABLE'"
+	exit 1
+fi
+
+command -v R &> /dev/null || { echo >&2 "Error: 'R' executable not in binaries path"; exit 1; }
+
+################################################################################
+
+readonly TMPLDIR=$(mktemp -d)
+trap "rm -r $TMPLDIR" EXIT
+
+R --vanilla --args "$GLOBAL_SCORES_TABLE" "$INPUT_ID" "${TMPLDIR}/selection" > /dev/null << 'EOF'
+args=commandArgs(TRUE);
+infile=args[1];
+id=args[2];
+outfile=args[3];
+df=read.table(infile, header=TRUE, stringsAsFactors=FALSE);
+
+df=df[which(df$ID==id),];
+if(nrow(df)<1){stop(paste0("No ID == '", id, "'"));}
+
+df$modified=sub("_relaxed", "", df$modified);
+df$modified=sub("rebuilt_", "", df$modified);
+df$modified=sub("mutated_", "", df$modified);
+df$modified=sub("rebuilt", "original", df$modified);
+df$modified=sub("no", "original", df$modified);
+
+df=df[order(df$pseudoenergy),];
+df$non_ic_area_pseudoenergy=(df$pseudoenergy-df$ic_area_pseudoenergy);
+
+odf=df[which(df$modified=="original"),];
+if(nrow(odf)==0){stop("No non-mutated entry");}
+if(nrow(odf)>1){stop("More than one non-mutated entry");}
+
+df$pseudoenergy_diff_full=(df$pseudoenergy-odf$pseudoenergy);
+df$pseudoenergy_diff_ic=(df$ic_area_pseudoenergy-odf$ic_area_pseudoenergy);
+df$pseudoenergy_diff_non_ic=(df$non_ic_area_pseudoenergy-odf$non_ic_area_pseudoenergy);
+
+confident_sel=which(df$pseudoenergy_diff_full<0 & df$pseudoenergy_diff_ic<0 & df$pseudoenergy_diff_non_ic<0);
+if(length(confident_sel)<1){stop("No confident selections available");}
+
+sdf=df[confident_sel,];
+
+sdf$weight=(0-sdf$pseudoenergy_diff_full)+(0-sdf$pseudoenergy_diff_ic);
+sdf$weight[which(sdf$weight<0)]=0;
+
+sdf$chain_resnum_resname=sdf$modified;
+
+result=sdf[,c("chain_resnum_resname", "weight", "pseudoenergy_diff_full", "pseudoenergy_diff_ic", "pseudoenergy_diff_non_ic")];
+
+result=result[order(0-result$weight),];
+
+write.table(result, file=outfile, row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
+EOF
+
+if [ ! -s "${TMPLDIR}/selection" ]
+then
+	echo >&2 "Error: failed to select confident mutations for ID='${INPUT_ID}' from the input table file '$GLOBAL_SCORES_TABLE'"
+	exit 1
+fi
+
+################################################################################
+
+{
+cat "${TMPLDIR}/selection" | head -1 | sed 's/chain_resnum_resname/chain resnum resname/'
+cat "${TMPLDIR}/selection" | tail -n +2 | tr '_' ' '
+} > "${TMPLDIR}/mutations"
+
+R --vanilla --args "${TMPLDIR}/mutations" "${TMPLDIR}/mutations_annotated" > /dev/null << 'EOF'
+args=commandArgs(TRUE);
+infile=args[1];
+outfile=args[2];
+df=read.table(infile, header=TRUE, stringsAsFactors=FALSE);
+comboname=paste0(df$chain, "_", df$resnum);
+df$nonredundant=0;
+df$nonredundant[!duplicated(comboname)]=1;
+write.table(df, file=outfile, row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
+all_pseudoenergies=c(df$pseudoenergy_diff_full, df$pseudoenergy_diff_ic);
+#plot(x=1:nrow(df), y=df$pseudoenergy_diff_full, ylim=c(min(all_pseudoenergies), max(all_pseudoenergies)), xlab="Rank", ylab="Pseudo-energy difference", main="", col="black");
+#points(x=1:nrow(df), y=df$pseudoenergy_diff_ic, col="red");
+EOF
+
+if [ ! -s "${TMPLDIR}/mutations_annotated" ]
+then
+	echo >&2 "Error: failed to annotate selected mutations"
+	exit 1
+fi
+
+################################################################################
+
+
+
+cat "${TMPLDIR}/mutations_annotated" | column -t
+
+
