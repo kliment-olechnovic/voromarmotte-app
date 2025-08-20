@@ -76,6 +76,7 @@ Options:
     --mutate-sidechains       string     triples of strings (chain resnum resname) to define mutations and rebuild with FASPR
     --relax-with-openmm       string     parameters (':'-separated tokens, or 'basic') to enable the OpenMM relaxation, default is ''
     --subselect-contacts      string     query to subselect inter-chain contacts, default is '[]'
+    --output-atoms-file       string     output file path for the processed input atoms
     --output-per-contact      string     output file path for the table of per-contact scores, default is ''
     --output-per-residue      string     output file path for the table of per-residue summary scores, default is ''
     --output-table-file       string     output file path for the global scores, default is '_stdout'
@@ -93,10 +94,10 @@ Examples:
     
     ./voromarmotte  --input ./model.pdb --subselect-contacts '[-inter-chain]' > ./table.txt
     
-    ./voromarmotte  --input ./model.pdb --output-per-contact ./table_of_contacts.txt > ./table.txt
+    ./voromarmotte  --input ./model.pdb --subselect-contacts '[-a1 [-chain A]]' --output-per-contact ./table_of_contacts.txt > ./table.txt
     
     find ./models/ -type f -name '*.pdb' | ./voromarmotte --input _list --subselect-contacts '[-inter-chain]' > ./table.txt
-    
+
 ```
 
 # Output example
