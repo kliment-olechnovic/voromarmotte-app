@@ -1,6 +1,6 @@
 # Analyzing binders
 
-Let's analyze three AF2 models of protein-protein complexes with designed dinders in the [input directory](./input/).
+Let's analyze three AF2 models of protein-protein complexes with designed binders in the [input directory](./input/).
 
 We can run VoroMarmotte to get both global and inter-chain (ic_...) scores using a single command.
 Let's tell VoroMarmotte to rebuild sidechains using FASPR, and let's consider only contacts involving the binder (chain A).
@@ -132,7 +132,7 @@ design2.pdb  rebuilt_mutated_A_76_TYR_A_71_TYR_A_123_GLN   -9906.65455364476  73
 design1.pdb  rebuilt_mutated_A_27_GLY_A_161_PHE            -12906.9189975958  9364.98404  -13294.7549612756       9071.22474      0.132010491926049  -651.506606215465     1236.27615     -868.262458962567          858.73411
 ```
 
-We can also run VoroMarmotte to generate files to visualize the interface the most interesting mutants, for example:
+We can also run VoroMarmotte to generate files to visualize the interface of the most interesting mutant, for example:
 
 ```bash
 voromarmotte \
@@ -149,5 +149,5 @@ Below are `design2.pdb` interfaces before and after the mutations, showed togeth
 
 ![](./output/suggested_mutations_to_increase_binding_stability/design2/colored_interfaces.png)
 
-Obviosly, we cannot expect to turn every contact blue with just three mutations - more mutations can help, althoug we probably must be cautious to not break the structure with them.
+Obviosly, we cannot expect to turn every contact blue with just three mutations - more mutations can help, although we probably must be cautious to not break the structure with them.
 
