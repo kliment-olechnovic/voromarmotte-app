@@ -128,7 +128,7 @@ Running
 
 ```bash
 ./voromarmotte \
-  --input "./tests/input/target.pdb" \
+  --input "./tests/input/set1/target.pdb" \
   --conda-path ~/miniconda3 \
   --conda-env "voromarmotte-env" \
   --subselect-contacts "[-inter-chain]" \
@@ -141,7 +141,7 @@ output scores and generates two visualiztion scripts: "show_inter_chain_interfac
 The "show_interface.vs" script is to be run by Voronota-GL after loading the input structure:
 
 ```bash
-voronota-gl "./tests/input/target.pdb" "show_inter_chain_interface.vs"
+voronota-gl "./tests/input/set1/target.pdb" "show_inter_chain_interface.vs"
 ```
 
 ![](./docs/screenshot-voronota-gl.png)
@@ -149,11 +149,11 @@ voronota-gl "./tests/input/target.pdb" "show_inter_chain_interface.vs"
 The "show_interface.py" script is to be run by PyMol (should work with both 'pymol' and 'pymol-oss.pymol'):
 
 ```bash
-pymol-oss.pymol "./tests/input/target.pdb" "show_inter_chain_interface.py"
+pymol-oss.pymol "./tests/input/set1/target.pdb" "show_inter_chain_interface.py"
 ```
 
 ![](./docs/screenshot-pymol.png)
 
 # Analyzing and improving binders
 
-Plese see [this page](./benchmarks/on-some-binder-designs/ABOUT.md) to learn about possible usages of VoroMarmotte for analyzing and improving protein binder designs.
+Plese see [this page](./benchmarks/on-some-binder-designs/ABOUT.md) that describes possible usages of VoroMarmotte for analyzing and improving protein binder designs.
