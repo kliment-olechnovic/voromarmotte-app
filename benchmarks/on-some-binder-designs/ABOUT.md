@@ -145,7 +145,7 @@ voromarmotte \
 > "interface_scores.txt"
 ```
 
-Below are `design2.pdb` interfaces before and after the mutations, colored by pseudoenergy (blue for negative (good), red for positive (bad):
+Below are `design2.pdb` interfaces before and after the mutations, showed together with chain A and colored by pseudo-energy - blue for negative (good), red for positive (bad):
 
 ![](./output/suggested_mutations_to_increase_binding_stability/design2/colored_interfaces.png)
 
