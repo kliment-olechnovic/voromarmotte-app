@@ -28,7 +28,8 @@ readonly TMPLDIR=$(mktemp -d)
 trap "rm -r $TMPLDIR" EXIT
 
 ./voronota-js-vcblocks \
-  --akbps-layered-lib ./akbps_protein_protein_config_bundle.tar.gz \
+  --akbps-layered-lib "./akbps_protein_protein_config_bundle/akbps_config_bundle/akbps_layered_lib" \
+  --akbps-layered-lib-weights "./akbps_protein_protein_config_bundle/akbps_config_bundle/akbps_layered_lib_weights" \
   --input "$INFILE" \
   --subselect-contacts "(([-min-seq-sep 6]) and (${SUBSELECETIONOFCONTACTS}))" \
   --output-table-file "${TMPLDIR}/raw_table" \
