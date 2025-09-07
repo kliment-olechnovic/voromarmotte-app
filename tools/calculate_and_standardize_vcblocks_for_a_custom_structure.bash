@@ -45,23 +45,9 @@ cut -f1-9 "${TMPLDIR}/raw_table" > "${TMPLDIR}/raw_table_ids_and_basic_values"
 
 cut -f10- "${TMPLDIR}/raw_table" > "${TMPLDIR}/standardized_table.tsv"
 
-python3 - << EOF
-import numpy as np
-import torch
-data = np.loadtxt("${TMPLDIR}/standardized_table.tsv", delimiter="\t", dtype=np.float32, skiprows=1)
-tensor = torch.from_numpy(data)
-torch.save(tensor, "${TMPLDIR}/standardized_table.pt")
-EOF
-
-if [ ! -s "${TMPLDIR}/standardized_table.pt" ]
-then
-	echo >&2 "Error: failed to generate PyTorch data file for '$INFILE'"
-	exit 1
-fi
-
 mkdir -p "$(dirname ${OUTPREFIX}file)"
 
 mv "${TMPLDIR}/raw_table_ids_and_basic_values" ${OUTPREFIX}vcblock_ids_and_basic_values.tsv
 
-mv "${TMPLDIR}/standardized_table.pt" ${OUTPREFIX}vcblocks.pt
+mv "${TMPLDIR}/standardized_table.tsv" ${OUTPREFIX}vcblocks.tsv
 

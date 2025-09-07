@@ -35,13 +35,13 @@ trap "rm -r $TMPLDIR" EXIT
 
 ./calculate_and_standardize_vcblocks_for_a_custom_structure.bash "$INMOLFILE" "${TMPLDIR}/data_" "$SUBSELECETIONOFCONTACTS"
 
-if [ ! -s "${TMPLDIR}/data_vcblocks.pt" ] || [ ! -s "${TMPLDIR}/data_vcblock_ids_and_basic_values.tsv" ]
+if [ ! -s "${TMPLDIR}/data_vcblocks.tsv" ] || [ ! -s "${TMPLDIR}/data_vcblock_ids_and_basic_values.tsv" ]
 then
 	echo >&2 "Error: failed to prepare input for ML"
 	exit 1
 fi
 
-./run_trained_mlp_classifier.bash "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.pt" > "${TMPLDIR}/predictions"
+./run_trained_mlp_classifier.bash "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.tsv" > "${TMPLDIR}/predictions"
 
 if [ ! -s "${TMPLDIR}/predictions" ]
 then
