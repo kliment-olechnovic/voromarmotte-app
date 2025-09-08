@@ -31,9 +31,8 @@ model.load_state_dict(torch.load(args.model_file, map_location=device))
 model.eval()
 
 tsv_data = np.loadtxt(args.data_file, delimiter="\t", dtype=np.float32, skiprows=0)
-val_data = torch.from_numpy(tsv_data)
+val_features = torch.from_numpy(tsv_data)
 
-val_features = val_data[:, 1:]
 val_dataset = TensorDataset(val_features)
 val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, pin_memory=False, num_workers=2, persistent_workers=True)
 
