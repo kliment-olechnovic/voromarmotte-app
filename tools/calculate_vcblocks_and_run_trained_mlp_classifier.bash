@@ -41,7 +41,15 @@ then
 	exit 1
 fi
 
-./run_trained_mlp_classifier.bash "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.tsv" > "${TMPLDIR}/predictions"
+{
+if [[ $NNMODELFILE == *.onnx ]]
+then
+	./run_trained_mlp_classifier_using_onnx.bash "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.tsv"
+else
+	./run_trained_mlp_classifier_using_pytorch.bash "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.tsv"
+fi
+} \
+> "${TMPLDIR}/predictions"
 
 if [ ! -s "${TMPLDIR}/predictions" ]
 then

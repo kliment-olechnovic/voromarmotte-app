@@ -10,6 +10,7 @@ Options:
     --input | -i              string  *  input file path or '_list' to read file paths from stdin
     --conda-path              string     conda installation path, default is '${HOME}/miniconda3'
     --conda-env               string     conda environment name, default is 'voromarmotte-env'
+    --inference-engine        string     name of an MLP inference engine to use, can be 'onnx' or 'pytorch', default is 'pytorch'
     --rebuild-sidechains      string     flag to rebuild side-chains with FASPR, can be 'false' or 'true', default is 'false'
     --mutate-sidechains       string     triples of strings (chain resnum resname) to define mutations and rebuild with FASPR
     --relax-with-openmm       string     parameters (':'-separated tokens, or 'basic') to enable the OpenMM relaxation, default is ''
@@ -63,6 +64,7 @@ ALLARGS=("$@")
 INFILE=""
 CONDA_PATH="${HOME}/miniconda3"
 CONDA_ENV="voromarmotte-env"
+INFERENCE_ENGINE="pytorch"
 REBUILD_SIDECHAINS="false"
 MUTATE_SIDECHAINS=""
 RELAX_WITH_OPENMM=""
@@ -92,6 +94,10 @@ do
 		;;
 	--conda-env)
 		CONDA_ENV="$OPTARG"
+		shift
+		;;
+	--inference-engine)
+		INFERENCE_ENGINE="$OPTARG"
 		shift
 		;;
 	--rebuild-sidechains)
@@ -168,6 +174,12 @@ then
 fi
 
 ################################################################################
+
+if [ "$INFERENCE_ENGINE" != "onnx" ] && [ "$INFERENCE_ENGINE" != "pytorch" ]
+then
+	echo >&2 "Error: invalid value '${INFERENCE_ENGINE}' for the inference engine name, must be 'onnx' or 'pytorch'"
+	exit 1
+fi
 
 if [ "$REBUILD_SIDECHAINS" == "no" ]
 then
@@ -463,8 +475,15 @@ then
 	cp "$INFILE" "$OUTPUT_ATOMS_FILE"
 fi
 
+MLP_MODEL_FILE_POSTFIX="pt"
+
+if [ "$INFERENCE_ENGINE" == "onnx" ]
+then
+	MLP_MODEL_FILE_POSTFIX="pt.onnx"
+fi
+
 ${SCRIPTDIR}/tools/calculate_vcblocks_and_run_trained_mlp_classifier.bash \
-  "${SCRIPTDIR}/tools/trained_nn_models/training_5870c524a74c0e90c4e5a6ea40aac7bb/mlp_epoch_232.pt" \
+  "${SCRIPTDIR}/tools/trained_nn_models/training_5870c524a74c0e90c4e5a6ea40aac7bb/mlp_epoch_232.${MLP_MODEL_FILE_POSTFIX}" \
   "$INFILE" \
   "$SUBSELECT_CONTACTS" \
 > "${TMPLDIR}/table"

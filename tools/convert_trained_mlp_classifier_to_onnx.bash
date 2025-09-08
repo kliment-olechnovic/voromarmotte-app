@@ -3,7 +3,7 @@
 cd "$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 MODELFILE="$1"
-DATAFILE="$2"
+OUTPUTFILE="$2"
 
 if [ -z "$MODELFILE" ] || [ ! -s "$MODELFILE" ]
 then
@@ -11,9 +11,9 @@ then
 	exit 1
 fi
 
-if [ -z "$DATAFILE" ] || [ ! -s "$DATAFILE" ]
+if [ -z "$OUTPUTFILE" ]
 then
-	echo >&2 "Invalid data file '${DATAFILE}'."
+	echo >&2 "Invalid output file '${OUTPUTFILE}'."
 	exit 1
 fi
 
@@ -27,5 +27,7 @@ fi
 
 export PYTHONDONTWRITEBYTECODE="yes"
 
-python run_trained_mlp_classifier.py --model-file "$MODELFILE" --data-file "$DATAFILE" $(cat ${ARGSFILE})
+mkdir -p "$(dirname ${OUTPUTFILE})"
+
+python convert_trained_mlp_classifier_to_onnx.py --model-file "$MODELFILE" --onnx-file "$OUTPUTFILE" $(cat ${ARGSFILE})
 
