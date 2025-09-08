@@ -27,13 +27,13 @@ fi
 readonly TMPLDIR=$(mktemp -d)
 trap "rm -r $TMPLDIR" EXIT
 
-./voronota-js-vcblocks \
+./voronota-js-vcblocks-simple \
   --akbps-layered-lib "./akbps_protein_protein_config_bundle/akbps_config_bundle/akbps_layered_lib" \
   --akbps-layered-lib-weights "./akbps_protein_protein_config_bundle/akbps_config_bundle/akbps_layered_lib_weights" \
   --input "$INFILE" \
+  --standardization "./training_columns_mean_and_sd_values.tsv" \
   --subselect-contacts "(([-min-seq-sep 6]) and (${SUBSELECETIONOFCONTACTS}))" \
-  --output-table-file "${TMPLDIR}/raw_table" \
-  --special-standardization "./training_columns_mean_and_sd_values.tsv"
+  --output-table-file "${TMPLDIR}/raw_table"
 
 if [ ! -s "${TMPLDIR}/raw_table" ]
 then

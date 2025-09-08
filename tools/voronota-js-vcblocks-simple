@@ -1,0 +1,226 @@
+#!/bin/bash
+
+function print_help_and_exit
+{
+cat >&2 << 'EOF'
+
+'voronota-js-vcblocks-simple' script computes Voronoi Contact Blocks.
+
+Options:
+    --akbps-layered-lib           string  *  input area KBPs library file path
+    --akbps-layered-lib-weights   string  *  input area KBPs library weights file path
+    --input | -i                  string  *  input file path
+    --standardization             string  *  path to input stats for special standardization
+    --output-table-file           string  *  output table file path
+    --subselect-contacts          string     query to subselect contacts, default is '[-min-seq-sep 6]'
+    --help | -h                              flag to display help message and exit
+
+Standard output:
+    space-separated table of Voronoi Contact Blocks
+    
+Examples:
+
+    voronota-js-vcblocks-simple --akbps-layered-lib ./akbps_protein_protein_config_bundle.tar.gz --input ./model.pdb
+
+EOF
+exit 1
+}
+
+readonly ZEROARG=$0
+ALLARGS=("$@")
+
+if [ -z "$1" ]
+then
+	print_help_and_exit
+fi
+
+if [[ $ZEROARG == *"/"* ]]
+then
+	cd "$(dirname ${ZEROARG})"
+	export PATH="$(pwd):${PATH}"
+	cd - &> /dev/null
+fi
+
+export LC_ALL=C
+
+command -v voronota-js &> /dev/null || { echo >&2 "Error: 'voronota-js' executable not in binaries path"; exit 1; }
+
+AKBPSLAYEREDLIB=""
+AKBPSLAYEREDLIBWEIGHTS=""
+INFILE=""
+SUBSELECT_CONTACTS="[-min-seq-sep 6]"
+OUTPUT_TABLE_FILE=""
+SPECIAL_STANDARDIZATION=""
+HELP_MODE="false"
+
+while [[ $# > 0 ]]
+do
+	OPTION="$1"
+	OPTARG="$2"
+	shift
+	case $OPTION in
+	--akbps-layered-lib)
+		AKBPSLAYEREDLIB="$OPTARG"
+		shift
+		;;
+	--akbps-layered-lib-weights)
+		AKBPSLAYEREDLIBWEIGHTS="$OPTARG"
+		shift
+		;;
+	-i|--input)
+		INFILE="$OPTARG"
+		shift
+		;;
+	--subselect-contacts)
+		SUBSELECT_CONTACTS="$OPTARG"
+		shift
+		;;
+	--output-table-file)
+		OUTPUT_TABLE_FILE="$OPTARG"
+		shift
+		;;
+	--standardization)
+		SPECIAL_STANDARDIZATION="$OPTARG"
+		shift
+		;;
+	-h|--help)
+		HELP_MODE="true"
+		;;
+	*)
+		echo >&2 "Error: invalid command line option '$OPTION'"
+		exit 1
+		;;
+	esac
+done
+
+if [ "$HELP_MODE" == "true" ]
+then
+	print_help_and_exit
+fi
+
+if [ -z "$AKBPSLAYEREDLIB" ]
+then
+	echo >&2 "Error: input area KBPs file not provided"
+	exit 1
+fi
+
+if [ -z "$AKBPSLAYEREDLIBWEIGHTS" ]
+then
+	echo >&2 "Error: input area KBPs weights file not provided"
+	exit 1
+fi
+
+if [ -z "$INFILE" ]
+then
+	echo >&2 "Error: input file not provided"
+	exit 1
+fi
+
+if [ -z "$SPECIAL_STANDARDIZATION" ]
+then
+	echo >&2 "Error: standardization file not provided"
+	exit 1
+fi
+
+if [ -z "$OUTPUT_TABLE_FILE" ]
+then
+	echo >&2 "Error: output file not provided"
+	exit 1
+fi
+
+if [ ! -s "$AKBPSLAYEREDLIB" ]
+then
+	echo >&2 "Error: input area KBPs file '$AKBPSLAYEREDLIB' does not exist"
+	exit 1
+fi
+
+if [ ! -s "$AKBPSLAYEREDLIBWEIGHTS" ]
+then
+	echo >&2 "Error: input area KBPs weights file '$AKBPSLAYEREDLIBWEIGHTS' does not exist"
+	exit 1
+fi
+
+if [ ! -s "$INFILE" ]
+then
+	echo >&2 "Error: input file '$INFILE' does not exist"
+	exit 1
+fi
+
+if [ ! -s "$SPECIAL_STANDARDIZATION" ]
+then
+	echo >&2 "Error: standardization file '$SPECIAL_STANDARDIZATION' does not exist"
+	exit 1
+fi
+
+INFILE_BASENAME="$(basename ${INFILE})"
+
+{
+cat << EOF
+var params={}
+params.akbps_layered_lib='$AKBPSLAYEREDLIB';
+params.akbps_summing_weights='$AKBPSLAYEREDLIBWEIGHTS';
+params.contacts_subselection='$SUBSELECT_CONTACTS';
+params.special_standardization='$SPECIAL_STANDARDIZATION';
+var input={};
+input.atoms_file='$INFILE';
+input.output_id='$INFILE_BASENAME';
+input.output_file='$OUTPUT_TABLE_FILE';
+EOF
+
+cat << 'EOF'
+if(!input.atoms_file)
+{
+	throw ("No input file");
+}
+
+voronota_setup_defaults("-no-load-voromqa-potentials", "-no-load-alt-voromqa-potential", "-no-load-mock-voromqa-potential");
+
+voronota_setup_akbps_layered("-potentials", params.akbps_layered_lib, "-summing-weights", params.akbps_summing_weights);
+voronota_assert_full_success("Failed to setup area KBPs-Layered");
+
+if(!params.contacts_subselection)
+{
+	params.contacts_subselection='[]';
+}
+
+voronota_import("-file", input.atoms_file);
+voronota_assert_partial_success("Failed to import file");
+
+voronota_restrict_atoms("-use", "[-protein]");
+voronota_assert_full_success("Failed to restrict input atoms to protein only");
+
+var result_initial_number_of_accepted_atoms=voronota_last_output().results[0].output.atoms_summary_new.number_total;
+
+voronota_construct_contacts_radically_fast("-adjunct-circle-restrictions", [-1.6, -1.2, -0.8, -0.4, -0.0000001], "-precutting-shifts", [0.9], "-add-collapsed-adjuncts", "-calculate-adjacencies");
+voronota_assert_full_success("Failed to construct inter-chain contacts");
+
+var selection_for_recording_vcblocks=params.contacts_subselection;
+
+if(input.selection_file)
+{
+	if(input.selection_file!="undefined")
+	{
+		voronota_import_selection_of_contacts("-file", input.selection_file, "-name", "sel_from_file", "-no-serial", "-no-name");
+		voronota_assert_full_success("Failed to select inter-chain contacts using file '"+input.selection_file+"'");
+		selection_for_recording_vcblocks="(([sel_from_file]) and ("+selection_for_recording_vcblocks+"))";
+	}
+}
+
+voronota_calculate_akbps_layered("-use", "[-min-seq-sep 2]", "-adj-prefix", "AKBP");
+voronota_assert_full_success("Failed to compute area KBPs scores");
+
+voronota_vcblocks(
+  "-sel-for-recording", selection_for_recording_vcblocks,
+  "-residue-value-names-for-encoding", ["volume", "sas_area", "area_near", "area_far"],
+  "-far-contact-value-names-for-encoding", ["area", "boundary", "AKBP_kbp1_exp", "AKBP_kbp1_exp_sa1x", "AKBP_kbp1_exp_sa2x", "AKBP_kbp1_exp_sa3x", "AKBP_kbp1_exp_sa4x", "AKBP_kbp1_exp_sa5x", "AKBP_kbp1_exp_saXa", "AKBP_kbp1_exp_saXb", "AKBP_kbp1_exp_saXc", "AKBP_kbp1_exp_saXx", "AKBP_kbp1_obs", "AKBP_kbp1_obs_sa1x", "AKBP_kbp1_obs_sa2x", "AKBP_kbp1_obs_sa3x", "AKBP_kbp1_obs_sa4x", "AKBP_kbp1_obs_sa5x", "AKBP_kbp1_obs_saXa", "AKBP_kbp1_obs_saXb", "AKBP_kbp1_obs_saXc", "AKBP_kbp1_obs_saXx", "AKBP_kbp2_exp_a", "AKBP_kbp2_exp_a_sa1x", "AKBP_kbp2_exp_a_sa2x", "AKBP_kbp2_exp_a_sa3x", "AKBP_kbp2_exp_a_sa4x", "AKBP_kbp2_exp_a_sa5x", "AKBP_kbp2_exp_a_saXa", "AKBP_kbp2_exp_a_saXb", "AKBP_kbp2_exp_a_saXc", "AKBP_kbp2_exp_a_saXx", "AKBP_kbp2_exp_b", "AKBP_kbp2_exp_b_sa1x", "AKBP_kbp2_exp_b_sa2x", "AKBP_kbp2_exp_b_sa3x", "AKBP_kbp2_exp_b_sa4x", "AKBP_kbp2_exp_b_sa5x", "AKBP_kbp2_exp_b_saXa", "AKBP_kbp2_exp_b_saXb", "AKBP_kbp2_exp_b_saXc", "AKBP_kbp2_exp_b_saXx", "AKBP_kbp2_obs", "AKBP_kbp2_obs_sa1x", "AKBP_kbp2_obs_sa2x", "AKBP_kbp2_obs_sa3x", "AKBP_kbp2_obs_sa4x", "AKBP_kbp2_obs_sa5x", "AKBP_kbp2_obs_saXa", "AKBP_kbp2_obs_saXb", "AKBP_kbp2_obs_saXc", "AKBP_kbp2_obs_saXx", "AKBP_known_area", "AKBP_raw_sa1x", "AKBP_raw_sa2x", "AKBP_raw_sa3x", "AKBP_raw_sa4x", "AKBP_raw_sa5x", "AKBP_raw_saXa", "AKBP_raw_saXb", "AKBP_raw_saXc", "AKBP_raw_saXx", "AKBP_weighted_sum", "pcut00000levelareaM00000", "pcut00000levelareaM00040", "pcut00000levelareaM00080", "pcut00000levelareaM00120", "pcut00000levelareaM00160", "pcut00000subareaM00040toM00000", "pcut00000subareaM00080toM00040", "pcut00000subareaM00120toM00080", "pcut00000subareaM00160toM00120", "pcut00000subareaM99900toM00000", "pcut00000subareaM99900toM00160", "pcut00001levelareaM00000", "pcut00001levelareaM00040", "pcut00001levelareaM00080", "pcut00001levelareaM00120", "pcut00001levelareaM00160", "pcut00001subareaM00040toM00000", "pcut00001subareaM00080toM00040", "pcut00001subareaM00120toM00080", "pcut00001subareaM00160toM00120", "pcut00001subareaM99900toM00000", "pcut00001subareaM99900toM00160", "pcut00003levelareaM00000", "pcut00003levelareaM00040", "pcut00003levelareaM00080", "pcut00003levelareaM00120", "pcut00003levelareaM00160", "pcut00003subareaM00040toM00000", "pcut00003subareaM00080toM00040", "pcut00003subareaM00120toM00080", "pcut00003subareaM00160toM00120", "pcut00003subareaM99900toM00000", "pcut00003subareaM99900toM00160"],
+  "-near-contact-value-names-for-encoding", ["area", "boundary"],
+  "-output-table", input.output_file,
+  "-output-id", input.output_id,
+  "-special-standardization", params.special_standardization);
+voronota_assert_full_success("Failed to calculate and output VCBlocks");
+
+EOF
+
+} \
+| voronota-js --no-setup-defaults
+
