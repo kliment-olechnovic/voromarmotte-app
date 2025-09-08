@@ -6,7 +6,8 @@ We can run VoroMarmotte to get both global and inter-chain (ic_...) scores using
 Let's tell VoroMarmotte to rebuild sidechains using FASPR, and let's consider only contacts involving the binder (chain A).
 
 ```bash
-voromarmotte \
+find ./input/ -type f -name '*.pdb' \
+| ../../voromarmotte \
   --input _list \
   --rebuild-sidechains "true" \
   --subselect-contacts '[-a1 [-chain A]]' \
@@ -16,9 +17,9 @@ This produces the following table:
 
 ```
 ID           modified  pseudoenergy       area        best_core_pseudoenergy  best_core_area  ic_fraction        ic_area_pseudoenergy  ic_area_total  ic_best_core_pseudoenergy  ic_best_core_area
-design1.pdb  rebuilt   -11813.9722991064  9349.44412  -12266.8995239934       9044.61393      0.132961795807813  -420.463304133614     1243.11888     -716.134367071212          855.5979
-design2.pdb  rebuilt   -9067.31752791254  7375.05497  -9778.55923677698       6420.20767      0.187249405681379  -314.330967450795     1380.97466     -886.625170037865          688.60385
-design3.pdb  rebuilt   -233.510567837784  2956.76683  -1397.72679239948       1608.50955      0.426185899143085  609.733732775186      1260.13233     -395.251204376632          490.54953
+design1.pdb  rebuilt   -11813.9874771696  9349.44412  -12266.9147718293       9044.61393      0.132961795807813  -420.46647358874      1243.11888     -716.137148729163          855.5979
+design2.pdb  rebuilt   -9067.31268405614  7375.05497  -9778.55729382171       6420.20767      0.187249405681379  -314.328949022416     1380.97466     -886.622354313372          688.60385
+design3.pdb  rebuilt   -233.506189086372  2956.76683  -1397.72422969608       1608.50955      0.426185899143085  609.737680109847      1260.13233     -395.248697797418          490.54953
 ```
 
 The 'best_core_...' values show what scores can theoretically be achieved if sort the contact areas by their exposure to solvent and start removing them starting from the most exposed ones until we get the minimum pseudoenergy. Such 'best_core_...' values indicate how the 'rim' of contacts affect the overall stability and whether there is any potential for the improvement of pseudoenergy by mutating rim-involved parts.
@@ -27,12 +28,12 @@ Now, let us mutate every interface residue in to other 19 residues, rebuild the 
 
 ```bash
 find ./input/ -type f -name '*.pdb' \
-| voromarmotte \
+| ../../voromarmotte \
   --input _list \
   --subselect-contacts '[-a1 [-chain A]]' \
   --mutate-sidechains 'interface-A-every' \
   --output-table-file "./output/global_scores_mutated_to_every.txt" \
-  --processors 20
+  --processors 16
 ```
 
 We can look at the produces table [here](./output/global_scores_mutated_to_every.txt).
@@ -135,7 +136,7 @@ design1.pdb  rebuilt_mutated_A_27_GLY_A_161_PHE            -12906.9189975958  93
 We can also run VoroMarmotte to generate files to visualize the interface of the most interesting mutant, for example:
 
 ```bash
-voromarmotte \
+../../voromarmotte \
   --input "./input/design2.pdb" \
   --mutate-sidechains "A_76_TYR_A_71_TYR_A_123_GLN" \
   --subselect-contacts '[-inter-chain]' \

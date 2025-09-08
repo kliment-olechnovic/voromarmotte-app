@@ -8,9 +8,7 @@ cat >&2 << 'EOF'
 
 Options:
     --input | -i              string  *  input file path or '_list' to read file paths from stdin
-    --conda-path              string     conda installation path, default is '${HOME}/miniconda3'
-    --conda-env               string     conda environment name, default is 'voromarmotte-env'
-    --inference-engine        string     name of an MLP inference engine to use, can be 'onnx' or 'pytorch', default is 'onnx'
+    --inference-engine        string     MLP inference engine to use, can be 'onnx-mlp-standalone' (default) or 'onnx' or 'pytorch'
     --rebuild-sidechains      string     flag to rebuild side-chains with FASPR, can be 'false' or 'true', default is 'false'
     --mutate-sidechains       string     triples of strings (chain resnum resname) to define mutations and rebuild with FASPR
     --relax-with-openmm       string     parameters (':'-separated tokens, or 'basic') to enable the OpenMM relaxation, default is ''
@@ -29,7 +27,7 @@ Standard output:
 
 Examples:
 
-    ./voromarmotte  --input ./model.pdb --conda-path ~/miniconda3 --conda-env 'voromarmotte-env' > ./table.txt
+    ./voromarmotte  --input ./model.pdb > ./table.txt
     
     ./voromarmotte  --input ./model.pdb --subselect-contacts '[-inter-chain]' > ./table.txt
     
@@ -62,9 +60,7 @@ readonly ZEROARG=$0
 ALLARGS=("$@")
 
 INFILE=""
-CONDA_PATH="${HOME}/miniconda3"
-CONDA_ENV="voromarmotte-env"
-INFERENCE_ENGINE="onnx"
+INFERENCE_ENGINE="onnx-mlp-standalone"
 REBUILD_SIDECHAINS="false"
 MUTATE_SIDECHAINS=""
 RELAX_WITH_OPENMM=""
@@ -86,14 +82,6 @@ do
 	case $OPTION in
 	-i|--input)
 		INFILE="$OPTARG"
-		shift
-		;;
-	--conda-path)
-		CONDA_PATH="$OPTARG"
-		shift
-		;;
-	--conda-env)
-		CONDA_ENV="$OPTARG"
 		shift
 		;;
 	--inference-engine)
@@ -175,9 +163,9 @@ fi
 
 ################################################################################
 
-if [ "$INFERENCE_ENGINE" != "onnx" ] && [ "$INFERENCE_ENGINE" != "pytorch" ]
+if [ "$INFERENCE_ENGINE" != "onnx-mlp-standalone" ] && [ "$INFERENCE_ENGINE" != "onnx" ] && [ "$INFERENCE_ENGINE" != "pytorch" ]
 then
-	echo >&2 "Error: invalid value '${INFERENCE_ENGINE}' for the inference engine name, must be 'onnx' or 'pytorch'"
+	echo >&2 "Error: invalid value '${INFERENCE_ENGINE}' for the inference engine name, must be 'onnx-mlp-standalone' or 'onnx' or 'pytorch'"
 	exit 1
 fi
 
@@ -203,37 +191,6 @@ then
 fi
 
 ################################################################################
-
-if [ -z "$CONDA_DEFAULT_ENV" ]
-then
-	if [ -z "$CONDA_PATH" ]
-	then
-		echo >&2 "Error: not in conda environment, and the conda path is not provided"
-		exit 1
-	fi
-	
-	if [ ! -s "${CONDA_PATH}/bin/activate" ]
-	then
-		echo >&2 "Error: no conda activation script '${CONDA_PATH}/bin/activate'"
-		exit 1
-	fi
-	
-	source "${CONDA_PATH}/bin/activate"
-fi
-
-if [ -n "$CONDA_ENV" ]
-then
-	if [ "$CONDA_DEFAULT_ENV" != "$CONDA_ENV" ]
-	then
-		conda activate "$CONDA_ENV"
-	fi
-	
-	if [ "$CONDA_DEFAULT_ENV" != "$CONDA_ENV" ]
-	then
-		echo >&2 "Error: no '$CONDA_ENV' environment"
-		exit 1
-	fi
-fi
 
 command -v R &> /dev/null || { echo >&2 "Error: 'R' executable not in binaries path"; exit 1; }
 
@@ -475,15 +432,9 @@ then
 	cp "$INFILE" "$OUTPUT_ATOMS_FILE"
 fi
 
-MLP_MODEL_FILE_POSTFIX="pt"
-
-if [ "$INFERENCE_ENGINE" == "onnx" ]
-then
-	MLP_MODEL_FILE_POSTFIX="pt.onnx"
-fi
-
 ${SCRIPTDIR}/tools/calculate_vcblocks_and_run_trained_mlp_classifier.bash \
-  "${SCRIPTDIR}/tools/trained_nn_models/training_5870c524a74c0e90c4e5a6ea40aac7bb/mlp_epoch_232.${MLP_MODEL_FILE_POSTFIX}" \
+  "$INFERENCE_ENGINE" \
+  "${SCRIPTDIR}/tools/trained_nn_models/training_5870c524a74c0e90c4e5a6ea40aac7bb/mlp_epoch_232.pt" \
   "$INFILE" \
   "$SUBSELECT_CONTACTS" \
 > "${TMPLDIR}/table"

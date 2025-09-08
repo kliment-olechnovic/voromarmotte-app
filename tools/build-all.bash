@@ -6,3 +6,5 @@ cd "$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 ./build-voronota-js.bash "$1"
 
+./tools/build-onnx-mlp-standalone.bash
+

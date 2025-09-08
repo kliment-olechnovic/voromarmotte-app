@@ -2,20 +2,32 @@
 
 cd "$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-NNMODELFILE="$1"
-INMOLFILE="$2"
-SUBSELECETIONOFCONTACTS="$3"
-LASTARG="$4"
+INFERENCE_ENGINE="$1"
+NNMODELFILE="$2"
+INMOLFILE="$3"
+SUBSELECETIONOFCONTACTS="$4"
+LASTARG="$5"
 
 if [ -z "$SUBSELECETIONOFCONTACTS" ]
 then
 	SUBSELECETIONOFCONTACTS="[]"
 fi
 
-if [ -z "$NNMODELFILE" ] || [ -z "$INMOLFILE" ] || [ -n "$LASTARG" ]
+if [ -z "$INFERENCE_ENGINE" ] || [ -z "$NNMODELFILE" ] || [ -z "$INMOLFILE" ] || [ -n "$LASTARG" ]
 then
-	echo >&2 "Error: invalid number of command-line arguments, must be exactly two - 'nn_model_file' and 'input_mol_file' [and 'subselection_of_contacts']"
+	echo >&2 "Error: invalid number of command-line arguments"
 	exit 1
+fi
+
+if [ "$INFERENCE_ENGINE" != "onnx-mlp-standalone" ] && [ "$INFERENCE_ENGINE" != "onnx" ] && [ "$INFERENCE_ENGINE" != "pytorch" ]
+then
+	echo >&2 "Error: invalid value for the inference engine name"
+	exit 1
+fi
+
+if [ "$INFERENCE_ENGINE" == "onnx-mlp-standalone" ] || [ "$INFERENCE_ENGINE" == "onnx" ]
+then
+	NNMODELFILE="${NNMODELFILE}.onnx"
 fi
 
 if [ ! -s "$NNMODELFILE" ]
@@ -41,15 +53,9 @@ then
 	exit 1
 fi
 
-{
-if [[ $NNMODELFILE == *.onnx ]]
-then
-	./run_trained_mlp_classifier_using_onnx.bash "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.bin"
-else
-	./run_trained_mlp_classifier_using_pytorch.bash "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.bin"
-fi
-} \
-> "${TMPLDIR}/predictions"
+INFERENCE_SCRIPT="./run_trained_mlp_classifier_using_$(echo ${INFERENCE_ENGINE} | tr '-' '_').bash"
+
+$INFERENCE_SCRIPT "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.bin" > "${TMPLDIR}/predictions"
 
 if [ ! -s "${TMPLDIR}/predictions" ]
 then

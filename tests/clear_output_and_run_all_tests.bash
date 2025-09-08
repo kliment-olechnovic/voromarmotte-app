@@ -10,16 +10,12 @@ mkdir -p "./output"
 find "./input/set1/" -type f -name '*.pdb' \
 | ../voromarmotte \
   --input _list \
-  --conda-path "${HOME}/miniconda3" \
-  --conda-env "voromarmotte-env" \
   --processors 4 \
 > "./output/all_global_scores_for_all_contacts.txt"
 
 find "./input/set1/" -type f -name '*.pdb' \
 | ../voromarmotte \
   --input _list \
-  --conda-path "${HOME}/miniconda3" \
-  --conda-env "voromarmotte-env" \
   --processors 4 \
   --subselect-contacts '[-inter-chain]' \
   --rebuild-sidechains true \
@@ -41,8 +37,6 @@ find "./input/set1/" -type f -name '*.pdb' \
 | ../voromarmotte \
   --input _list \
   --processors 4 \
-  --conda-path "${HOME}/miniconda3" \
-  --conda-env "voromarmotte-env" \
   --subselect-contacts '[]' \
   --rebuild-sidechains true \
   --output-per-contact "./output/local_scores_for_all_contacts_of_INPUTNAME.txt" \

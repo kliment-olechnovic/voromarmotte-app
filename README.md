@@ -13,9 +13,15 @@ VoroMarmotte is developed by Kliment Olechnovic ([www.kliment.lt](https://www.kl
 
 # Obtaining and setting up VoroMarmotte
 
+## System requirements
+
+To use the default fast inference engine, Linux x64 is required, R is required, but conda (Anaconda or Miniconda) is not required.
+
+Other inference engines can be used on any system with conda (Anaconda or Miniconda).
+
 ## Getting the latest version
 
-The currently recommended way to obtain VoroMarmotte is cloning the VoroMarmotte git repository [https://github.com/kliment-olechnovic/voromarmotte-app](https://github.com/kliment-olechnovic/voromarmotte-app):
+The recommended way to obtain VoroMarmotte is cloning the VoroMarmotte git repository [https://github.com/kliment-olechnovic/voromarmotte-app](https://github.com/kliment-olechnovic/voromarmotte-app):
 
 ```bash
 git clone https://github.com/kliment-olechnovic/voromarmotte-app.git
@@ -24,18 +30,18 @@ cd ./voromarmotte-app
 
 ## Building the included software
 
-VoroMarmotte comes with statically built binaries for Linux in the 'tools' subdirectory.
-
-The source code for the compilable software is included, and can be used to build all the needed executable with the following single command: 
+To use the default fast inference engine, the needed executables must be rebuilt - for example, with the following single command: 
 
 ```bash
 ./tools/build-all.bash
 ```
 
+Other inference engines can work with the included statically built executables.
+
 ## Setting up an environment for running VoroMarmotte
 
-VoroMarmotte requires PyTorch, NumPy, and R.
-If relaxation option is used, VoroMarmotte additionally requires OpenMM and PDBFixer.
+For some optional features (using non-default inference engines, running relaxation using OpenMM)
+VoroMarmotte may nee to operate inside a suitable conda environment.
 
 Below is an example of setting up a suitable environment:
 
@@ -46,11 +52,11 @@ bash Miniconda3-latest-Linux-x86_64.sh
 source ~/miniconda3/bin/activate
 
 # import and activate provided environment
-conda env create --file ./env/voromarmotte-env.yaml
+conda env create --file ./tools/env/voromarmotte-env.yaml
 conda activate voromarmotte-env
 ```
 
-More information about creatin/loading/removing the `voromarmotte-env` environment is available [here](./env/voromarmotte-env-info.md). 
+More information about creatin/loading/removing the `voromarmotte-env` environment is available [here](./tools/env/voromarmotte-env-info.md).
 
 # Running the VoroMarmotte command-line tool
 
@@ -70,8 +76,7 @@ The following is the help message output:
 
 Options:
     --input | -i              string  *  input file path or '_list' to read file paths from stdin
-    --conda-path              string     conda installation path, default is '${HOME}/miniconda3'
-    --conda-env               string     conda environment name, default is 'voromarmotte-env'
+    --inference-engine        string     MLP inference engine to use, can be 'onnx-mlp-standalone' (default) or 'onnx' or 'pytorch'
     --rebuild-sidechains      string     flag to rebuild side-chains with FASPR, can be 'false' or 'true', default is 'false'
     --mutate-sidechains       string     triples of strings (chain resnum resname) to define mutations and rebuild with FASPR
     --relax-with-openmm       string     parameters (':'-separated tokens, or 'basic') to enable the OpenMM relaxation, default is ''
@@ -90,7 +95,7 @@ Standard output:
 
 Examples:
 
-    ./voromarmotte  --input ./model.pdb --conda-path ~/miniconda3 --conda-env 'voromarmotte-env' > ./table.txt
+    ./voromarmotte  --input ./model.pdb > ./table.txt
     
     ./voromarmotte  --input ./model.pdb --subselect-contacts '[-inter-chain]' > ./table.txt
     
@@ -108,18 +113,16 @@ Running
 find "./tests/input/" -type f -name '*.pdb' \
 | ./voromarmotte \
   --input _list \
-  --conda-path ~/miniconda3 \
-  --conda-env "voromarmotte-env" \
   --processors 4
 ```
 
 gives
 
 ```
-ID          modified  pseudoenergy      area        best_core_pseudoenergy  best_core_area  ic_fraction        ic_area_pseudoenergy  ic_area_total  ic_best_core_pseudoenergy  ic_best_core_area
-target.pdb  no        -12702.636336671  8719.37648  -13048.345726246        7978.57775      0.11965777855712   -1330.24276218966     1043.34122     -1465.40969052445          963.03436
-model2.pdb  no        4095.25251344407  8176.68624  -105.653140800416       1408.45828      0.118832088144304  -192.574100796512     971.6527       -478.757380500359          732.5084
-model1.pdb  no        6819.02936168173  8778.85413  156.932653724586        1775.00483      0.110761668390998  572.000174186728      972.36053      -17.1141399143923          721.16258
+ID          modified  pseudoenergy       area        best_core_pseudoenergy  best_core_area  ic_fraction        ic_area_pseudoenergy  ic_area_total  ic_best_core_pseudoenergy  ic_best_core_area
+target.pdb  no        -12702.6357847878  8719.37648  -13048.3470685256       7978.57775      0.11965777855712   -1330.24342400865     1043.34122     -1465.41011491134          963.03436
+model2.pdb  no        4095.2596881042    8176.68624  -105.657960563974       1408.45828      0.118832088144304  -192.572275218319     971.6527       -478.75702606988           732.5084
+model1.pdb  no        6819.02637251657   8778.85413  156.928428500962        1775.00483      0.110761668390998  571.996620780361      972.36053      -17.1168634440248          721.16258
 ```
 
 # Visualization example
@@ -129,8 +132,6 @@ Running
 ```bash
 ./voromarmotte \
   --input "./tests/input/set1/target.pdb" \
-  --conda-path ~/miniconda3 \
-  --conda-env "voromarmotte-env" \
   --subselect-contacts "[-inter-chain]" \
   --output-vscript "show_inter_chain_interface.vs" \
   --output-pymol-vscript "show_inter_chain_interface.py"
@@ -149,7 +150,7 @@ voronota-gl "./tests/input/set1/target.pdb" "show_inter_chain_interface.vs"
 The "show_interface.py" script is to be run by PyMol (should work with both 'pymol' and 'pymol-oss.pymol'):
 
 ```bash
-pymol-oss.pymol "./tests/input/set1/target.pdb" "show_inter_chain_interface.py"
+pymol "./tests/input/set1/target.pdb" "show_inter_chain_interface.py"
 ```
 
 ![](./docs/screenshot-pymol.png)
