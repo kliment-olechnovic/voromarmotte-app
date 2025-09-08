@@ -35,19 +35,15 @@ trap "rm -r $TMPLDIR" EXIT
   --subselect-contacts "(([-min-seq-sep 6]) and (${SUBSELECETIONOFCONTACTS}))" \
   --output-table-file "${TMPLDIR}/raw_table"
 
-if [ ! -s "${TMPLDIR}/raw_table" ]
+if [ ! -s "${TMPLDIR}/raw_table_part1" ] || [ ! -s "${TMPLDIR}/raw_table_part2" ]
 then
 	echo >&2 "Error: failed to calculate VCBlocks for '$INFILE'"
 	exit 1
 fi
 
-cut -f1-9 "${TMPLDIR}/raw_table" > "${TMPLDIR}/raw_table_ids_and_basic_values"
-
-cut -f10- "${TMPLDIR}/raw_table" > "${TMPLDIR}/standardized_table.tsv"
-
 mkdir -p "$(dirname ${OUTPREFIX}file)"
 
-mv "${TMPLDIR}/raw_table_ids_and_basic_values" ${OUTPREFIX}vcblock_ids_and_basic_values.tsv
+mv "${TMPLDIR}/raw_table_part1" ${OUTPREFIX}vcblock_ids_and_basic_values.tsv
 
-mv "${TMPLDIR}/standardized_table.tsv" ${OUTPREFIX}vcblocks.tsv
+mv "${TMPLDIR}/raw_table_part2" ${OUTPREFIX}vcblocks.tsv
 

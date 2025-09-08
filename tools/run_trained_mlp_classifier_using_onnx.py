@@ -20,7 +20,7 @@ sess = ort.InferenceSession(args.onnx_file, providers=["CPUExecutionProvider"])
 input_name = sess.get_inputs()[0].name
 output_name = sess.get_outputs()[0].name
 
-val_data = np.loadtxt(args.data_file, delimiter="\t", dtype=np.float32, skiprows=1)
+val_data = np.loadtxt(args.data_file, delimiter="\t", dtype=np.float32, skiprows=0)
 val_features = val_data[:, 1:]
 
 print("predicted_probability_to_persist")

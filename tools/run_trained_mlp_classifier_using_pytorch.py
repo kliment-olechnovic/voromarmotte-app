@@ -30,7 +30,7 @@ model = MLPClassifier(args.input_dim, args.hidden_dim1, args.hidden_dim2, args.d
 model.load_state_dict(torch.load(args.model_file, map_location=device))
 model.eval()
 
-tsv_data = np.loadtxt(args.data_file, delimiter="\t", dtype=np.float32, skiprows=1)
+tsv_data = np.loadtxt(args.data_file, delimiter="\t", dtype=np.float32, skiprows=0)
 val_data = torch.from_numpy(tsv_data)
 
 val_features = val_data[:, 1:]
