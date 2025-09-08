@@ -21,6 +21,10 @@ pip3 install torch --index-url https://download.pytorch.org/whl/cpu
 
 conda install numpy pandas openmm pdbfixer r-base
 
+python -m pip install onnx
+
+python -m pip install onnxruntime
+
 conda env export -n voromarmotte-env --no-builds > voromarmotte-env.yaml
 ```
 
