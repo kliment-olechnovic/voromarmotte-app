@@ -11,10 +11,12 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Run Trained Binary Classification MLP")
     parser.add_argument('--onnx-file', type=str, required=True)
     parser.add_argument('--data-file', type=str, required=True)
-    parser.add_argument('--batch-size', type=int, default=16384)
     return parser.parse_args()
 
 args = parse_args()
+
+so = ort.SessionOptions()
+so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
 sess = ort.InferenceSession(args.onnx_file, providers=["CPUExecutionProvider"])
 input_name = sess.get_inputs()[0].name
@@ -22,15 +24,11 @@ output_name = sess.get_outputs()[0].name
 
 val_features = np.loadtxt(args.data_file, delimiter="\t", dtype=np.float32, skiprows=0)
 
+logits = sess.run([output_name], {input_name: val_features})[0]
+
+out = sigmoid(logits)
+
 print("predicted_probability_to_persist")
 
-for start in range(0, val_features.shape[0], args.batch_size):
-    batch = val_features[start:start + args.batch_size]
-    outputs = sess.run([output_name], {input_name: batch})[0]
-    out = outputs
-    if out.ndim == 2 and out.shape[1] == 1:
-        out = out[:, 0]
-    out = sigmoid(out)
-    for v in out.tolist():
-        print(f"{float(v)}")
+np.savetxt(sys.stdout, out.reshape(-1, 1), fmt="%.10g")
 
