@@ -35,7 +35,7 @@ trap "rm -r $TMPLDIR" EXIT
 
 ./calculate_and_standardize_vcblocks_for_a_custom_structure.bash "$INMOLFILE" "${TMPLDIR}/data_" "$SUBSELECETIONOFCONTACTS"
 
-if [ ! -s "${TMPLDIR}/data_vcblocks.tsv" ] || [ ! -s "${TMPLDIR}/data_vcblock_ids_and_basic_values.tsv" ]
+if [ ! -s "${TMPLDIR}/data_vcblocks.bin" ] || [ ! -s "${TMPLDIR}/data_vcblock_ids_and_basic_values.tsv" ]
 then
 	echo >&2 "Error: failed to prepare input for ML"
 	exit 1
@@ -44,9 +44,9 @@ fi
 {
 if [[ $NNMODELFILE == *.onnx ]]
 then
-	./run_trained_mlp_classifier_using_onnx.bash "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.tsv"
+	./run_trained_mlp_classifier_using_onnx.bash "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.bin"
 else
-	./run_trained_mlp_classifier_using_pytorch.bash "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.tsv"
+	./run_trained_mlp_classifier_using_pytorch.bash "$NNMODELFILE" "${TMPLDIR}/data_vcblocks.bin"
 fi
 } \
 > "${TMPLDIR}/predictions"

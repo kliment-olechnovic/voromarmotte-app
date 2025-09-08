@@ -45,5 +45,5 @@ mkdir -p "$(dirname ${OUTPREFIX}file)"
 
 mv "${TMPLDIR}/raw_table_part1" ${OUTPREFIX}vcblock_ids_and_basic_values.tsv
 
-mv "${TMPLDIR}/raw_table_part2" ${OUTPREFIX}vcblocks.tsv
+mv "${TMPLDIR}/raw_table_part2" ${OUTPREFIX}vcblocks.bin
 

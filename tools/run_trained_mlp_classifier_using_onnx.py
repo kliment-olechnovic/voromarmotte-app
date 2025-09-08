@@ -19,10 +19,15 @@ so = ort.SessionOptions()
 so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
 sess = ort.InferenceSession(args.onnx_file, providers=["CPUExecutionProvider"])
-input_name = sess.get_inputs()[0].name
+sess_input = sess.get_inputs()[0]  
+input_name = sess_input.name
+input_shape = sess_input.shape
 output_name = sess.get_outputs()[0].name
 
-val_features = np.loadtxt(args.data_file, delimiter="\t", dtype=np.float32, skiprows=0)
+val_raw = np.fromfile(args.data_file, dtype=np.float32)
+
+n_cols = input_shape[-1]
+val_features = val_raw.reshape(-1, n_cols)
 
 logits = sess.run([output_name], {input_name: val_features})[0]
 

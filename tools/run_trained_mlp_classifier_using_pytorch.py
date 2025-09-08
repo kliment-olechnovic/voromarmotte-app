@@ -30,8 +30,12 @@ model = MLPClassifier(args.input_dim, args.hidden_dim1, args.hidden_dim2, args.d
 model.load_state_dict(torch.load(args.model_file, map_location=device))
 model.eval()
 
-tsv_data = np.loadtxt(args.data_file, delimiter="\t", dtype=np.float32, skiprows=0)
-val_features = torch.from_numpy(tsv_data)
+val_raw = np.fromfile(args.data_file, dtype=np.float32)
+
+n_cols = args.input_dim
+val_reshaped = val_raw.reshape(-1, n_cols)
+
+val_features = torch.from_numpy(val_reshaped)
 
 val_dataset = TensorDataset(val_features)
 val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, pin_memory=False, num_workers=2, persistent_workers=True)
