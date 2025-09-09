@@ -247,7 +247,7 @@ for(i in 1:M)
 result=data.frame(mutations=mutations, count=sizes, weight=weights);
 result=result[order(result$count, 0-result$weight),];
 result=result[!duplicated(result$mutations),];
-result=result[1:min(c(100, nrow(result))),];
+result=result[1:min(c(1000, nrow(result))),];
 
 write.table(result[,"mutations"], file=outfile_main, row.names=FALSE, col.names=FALSE, quote=FALSE, sep="\t");
 EOF

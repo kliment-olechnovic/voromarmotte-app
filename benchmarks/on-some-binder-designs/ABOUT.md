@@ -64,9 +64,9 @@ So, to run on a cluster, we can list all the mutations we need and consider them
 When we have the `global_scores_mutated_to_every.txt` table, we can use the [suggest-mutations-to-increase-binding-stability](../../meta/suggest-mutations-to-increase-binding-stability) script to generate priority-ranked multi-point mutations for every input structure file, for example:
 
 ```bash
-suggest-mutations-to-increase-binding-stability \
+../../meta/suggest-mutations-to-increase-binding-stability \
   --input-table "./output/global_scores_mutated_to_every.txt" \
-  --file-id "./input/desing2.pdb" \
+  --file-id "./input/design2.pdb" \
   --output-dir "./output/suggested_mutations_to_increase_binding_stability/design2"
 ```
 
@@ -99,9 +99,9 @@ This file can be directly submitted to the VoroMarmotte application:
 cat "./output/suggested_mutations_to_increase_binding_stability/design2/multiple_mutation_requests.txt" \
 | ../../voromarmotte \
   --input _list \
-  --mutate-sidechains '_list' \
+  --mutate-sidechains _list \
   --subselect-contacts '[-a1 [-chain A]]' \
-  --processors 20
+  --processors 16
 ```
 
 which mutates and scores complexes and produces a standard VoroMarmotte output table - see the full file [here](./output/suggested_mutations_to_increase_binding_stability/design2/global_scores_mutated_multiple.txt) and the first several lines below:
