@@ -191,7 +191,7 @@ voronota_assert_full_success("Failed to restrict input atoms to protein only");
 
 var result_initial_number_of_accepted_atoms=voronota_last_output().results[0].output.atoms_summary_new.number_total;
 
-voronota_construct_contacts_radically_fast("-adjunct-circle-restrictions", [-1.6, -1.2, -0.8, -0.4, -0.0000001], "-precutting-shifts", [0.9], "-add-collapsed-adjuncts", "-calculate-adjacencies");
+voronota_construct_contacts_radically_fast("-adjunct-circle-restrictions", [-1.6, -1.2, -0.8, -0.4, -0.0000001], "-precutting-shifts", [0.9], "-add-collapsed-adjuncts", "-calculate-adjacencies", "-no-intra-residue-adjunct-circle-restrictions");
 voronota_assert_full_success("Failed to construct inter-chain contacts");
 
 var selection_for_recording_vcblocks=params.contacts_subselection;
