@@ -15,9 +15,9 @@ VoroMarmotte is developed by Kliment Olechnovic ([www.kliment.lt](https://www.kl
 
 ## System requirements
 
-To use the default fast inference engine, Linux x64 is required, R is required, but conda (Anaconda or Miniconda) is not required.
+To use the default fast inference engine, Linux x64 is required.
 
-Other inference engines can be used on any system with conda (Anaconda or Miniconda).
+Other inference engines can be used on any system, but in a conda (Anaconda or Miniconda) environment.
 
 ## Getting the latest version
 
@@ -41,7 +41,7 @@ Other inference engines can work with the included statically built executables.
 ## Setting up an environment for running VoroMarmotte
 
 For some optional features (using non-default inference engines, running relaxation using OpenMM)
-VoroMarmotte may nee to operate inside a suitable conda environment.
+VoroMarmotte may need to operate inside a suitable conda environment.
 
 Below is an example of setting up a suitable environment:
 
