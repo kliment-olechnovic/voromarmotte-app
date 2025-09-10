@@ -64,12 +64,5 @@ done
 
 find "./output/" -type f -name '*scores*' | xargs -L 1 ./reprint_table_with_less_digits.bash
 
-find "./output/" -type f -name '*global_scores*' \
-| sort \
-| while read -r RESULTFILE
-do
-	echo "$RESULTFILE"
-	cat "$RESULTFILE" | sed 's/^/    /'
-	echo
-done
+git status -s ./output/
 
