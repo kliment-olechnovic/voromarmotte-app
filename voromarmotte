@@ -209,6 +209,17 @@ then
 	
 	mkdir -p "$TMPLDIR/children_tables"
 	
+	PROCESSORS_FOR_LEVEL_ONE="$MAX_PROCESSORS"
+	PROCESSORS_FOR_LEVEL_TWO="1"
+	
+	NUM_OF_INPUTS="$(cat ${TMPLDIR}/input_list | wc -l)"
+	
+	if [ "$NUM_OF_INPUTS" -lt "$MAX_PROCESSORS" ]
+	then
+		PROCESSORS_FOR_LEVEL_ONE="$NUM_OF_INPUTS"
+		PROCESSORS_FOR_LEVEL_TWO="$(echo ${MAX_PROCESSORS} ${NUM_OF_INPUTS} | awk '{print int($1/$2)}')"
+	fi
+	
 	cat "$TMPLDIR/input_list" \
 	| {
 	if [ "$MUTATE_SIDECHAINS" == "_list" ]
@@ -220,7 +231,7 @@ then
 		awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --output-table-file " outdir "/" NR ".pdb"}'
 	fi
 	} \
-	| xargs -L 1 -P "$MAX_PROCESSORS" "$ZEROARG" "${ALLARGS[@]}" --processors 1
+	| xargs -L 1 -P "$PROCESSORS_FOR_LEVEL_ONE" "$ZEROARG" "${ALLARGS[@]}" --processors "$PROCESSORS_FOR_LEVEL_TWO"
 	
 	find "$TMPLDIR/children_tables" -type f -not -empty \
 	| sort \

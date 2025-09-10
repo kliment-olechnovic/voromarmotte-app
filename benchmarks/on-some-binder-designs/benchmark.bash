@@ -11,7 +11,6 @@ mkdir -p "./output"
 {
 	echo "false no"
 	echo "true no"
-	echo "true basic"
 } \
 | while read -r REBUILDING RELAXING
 do
@@ -29,7 +28,7 @@ do
 	  --output-vscript ./output/visualizations/show_INPUTNAME_mod_MODIFIED.vs \
 	  --output-pymol-vscript ./output/visualizations/show_INPUTNAME_mod_MODIFIED.py \
 	  --output-atoms-file ./output/atoms/atoms_of_INPUTNAME_mod_MODIFIED.pdb \
-	  --processors 4
+	  --processors 16
 	
 	OUTFILE="./output/global_scores_interchain_rebuilt_${REBUILDING}_relaxed_${RELAXING}.txt"
 	
@@ -44,7 +43,7 @@ do
 	  --output-per-residue ./output/local_scores_per_residue_interchain/residues_of_INPUTNAME_mod_MODIFIED.txt \
 	  --output-vscript ./output/visualizations_interchain/show_INPUTNAME_mod_MODIFIED.vs \
 	  --output-pymol-vscript ./output/visualizations_interchain/show_INPUTNAME_mod_MODIFIED.py \
-	  --processors 4
+	  --processors 16
 done
 
 ################################################################################
@@ -58,7 +57,7 @@ find ./input/ -type f -name '*.pdb' \
   --subselect-contacts '[-a1 [-chain A]]' \
   --mutate-sidechains 'interface-A-every' \
   --output-table-file "$OUTFILE" \
-  --processors 30
+  --processors 16
 
 ################################################################################
 
@@ -95,7 +94,7 @@ do
 	  --mutate-sidechains '_list' \
 	  --subselect-contacts '[-a1 [-chain A]]' \
 	  --output-table-file "$MUTATIONSCORESFILE" \
-	  --processors 30
+	  --processors 16
 	
 	VISFILE="${OUTDIR}/show_${STRUCTNAME}_mutated_iface.vs"
 	
