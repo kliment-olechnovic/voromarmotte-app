@@ -62,7 +62,6 @@ do
 	  --output-table-file "./output/global_scores_for_all_contacts_of_interface_residues_mutated_to_ALA_${INPUTNAME}.txt"
 done
 
-
 find "./output/" -type f -name '*scores*' | xargs -L 1 ./reprint_table_with_less_digits.bash
 
 find "./output/" -type f -name '*global_scores*' \

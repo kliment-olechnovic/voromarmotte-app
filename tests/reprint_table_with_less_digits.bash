@@ -17,13 +17,17 @@ cat "$INFILE" > "${TMPLDIR}/table"
 
 cd "$TMPLDIR"
 
-R --vanilla << 'EOF' > /dev/null
-df=read.table("table", header=TRUE, stringsAsFactors=FALSE);
-df_formatted=data.frame(lapply(df, function(x) { if (is.numeric(x)) format(x, digits = 6, scientific = FALSE) else x }), stringsAsFactors = FALSE);
-write.table(df_formatted, file="table", row.names=FALSE, col.names=TRUE, quote=FALSE, sep="\t");
-EOF
+awk -F'[[:space:]]+' -v OFS=' ' -v n=3 '
+function fmt(x,    s){ s=sprintf("%.*f",n,x); sub(/\.?0+$/,"",s); return s }
+{
+  for (i=1; i<=NF; i++)
+    if ($i ~ /^-?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][-+]?[0-9]+)?$/)
+      $i = fmt($i)
+  print
+}' ./table \
+> ./reformatted_table
 
 cd - &> /dev/null
 
-cat "${TMPLDIR}/table" | column -t > "$INFILE"
+cat "${TMPLDIR}/reformatted_table" | column -t > "$INFILE"
 

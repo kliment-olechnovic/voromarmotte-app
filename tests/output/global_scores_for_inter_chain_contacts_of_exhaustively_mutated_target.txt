@@ -1,5 +1,5 @@
 ID          modified                  pseudoenergy  area     best_core_pseudoenergy  best_core_area  ic_fraction
-target.pdb  rebuilt                   -1158.485     944.348  -1181.191               934.660         1
+target.pdb  rebuilt                   -1158.485     944.348  -1181.191               934.66          1
 target.pdb  rebuilt_mutated_A_48_ASN  -1151.704     956.648  -1206.539               937.208         1
 target.pdb  rebuilt_mutated_A_48_ASP  -1150.641     955.893  -1205.474               936.453         1
 target.pdb  rebuilt_mutated_A_48_THR  -1142.475     946.409  -1165.181               936.721         1
@@ -11,11 +11,11 @@ target.pdb  rebuilt_mutated_A_48_LEU  -1086.082     948.211  -1133.695          
 target.pdb  rebuilt_mutated_A_48_TYR  -1085.452     943.905  -1145.631               922.717         1
 target.pdb  rebuilt_mutated_A_48_HIS  -1074.666     945.686  -1134.991               924.498         1
 target.pdb  rebuilt_mutated_A_48_ALA  -1073.409     948.822  -1128.999               929.382         1
-target.pdb  rebuilt_mutated_A_48_CYS  -1066.924     948.600  -1089.630               938.912         1
-target.pdb  rebuilt_mutated_A_48_GLN  -1030.910     943.397  -1086.502               923.957         1
+target.pdb  rebuilt_mutated_A_48_CYS  -1066.924     948.6    -1089.63                938.912         1
+target.pdb  rebuilt_mutated_A_48_GLN  -1030.91      943.397  -1086.502               923.957         1
 target.pdb  rebuilt_mutated_A_48_MET  -1012.885     953.396  -1067.821               933.956         1
 target.pdb  rebuilt_mutated_A_48_GLU  -948.753      949.072  -1004.392               929.632         1
 target.pdb  rebuilt_mutated_A_48_GLY  -944.299      940.822  -999.901                921.382         1
 target.pdb  rebuilt_mutated_A_48_TRP  -935.387      942.681  -991.026                923.241         1
-target.pdb  rebuilt_mutated_A_48_ARG  -893.983      942.770  -956.771                838.312         1
+target.pdb  rebuilt_mutated_A_48_ARG  -893.983      942.77   -956.771                838.312         1
 target.pdb  rebuilt_mutated_A_48_LYS  -756.419      946.658  -841.664                842.022         1
