@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd "$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+cd "$( cd -- "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 INFERENCE_ENGINE="$1"
 NNMODELFILE="$2"

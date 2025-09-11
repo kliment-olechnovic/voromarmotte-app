@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd "$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+cd "$( cd -- "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 INFILE="$1"
 OUTPREFIX="$2"

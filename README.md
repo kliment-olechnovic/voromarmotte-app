@@ -15,9 +15,9 @@ VoroMarmotte is developed by Kliment Olechnovic ([www.kliment.lt](https://www.kl
 
 ## System requirements
 
-To use the default fast inference engine, Linux x64 is required.
+To use the default fast inference engine, Linux x64 or macOS operating system is required.
 
-Other, Python-driven inference engines can be used on any system, but in a conda (Anaconda or Miniconda) environment.
+The software was developed and tested on Linux x64, it has not yet been tested on macOS or WSL (Windows Subsystem for Linux).
 
 ## Getting the latest version
 
