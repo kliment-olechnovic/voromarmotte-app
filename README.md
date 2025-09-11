@@ -11,7 +11,31 @@ This repository provides an alpha version of VoroMarmotte app.
 
 VoroMarmotte is developed by Kliment Olechnovic ([www.kliment.lt](https://www.kliment.lt)).
 
-# Obtaining and setting up VoroMarmotte
+# Quick start
+
+The recommended way to obtain VoroMarmotte is cloning the VoroMarmotte git repository [https://github.com/kliment-olechnovic/voromarmotte-app](https://github.com/kliment-olechnovic/voromarmotte-app):
+
+```bash
+git clone https://github.com/kliment-olechnovic/voromarmotte-app.git
+```
+
+Then change to the "voromarmotte-app" directory:
+
+```bash
+cd ./voromarmotte-app
+```
+
+Then build the needed executables using the following single command:
+
+```bash
+./tools/build-all.bash
+```
+
+Then run the VoroMarmotte application:
+
+```bash
+find "./tests/input/" -type f -name '*.pdb' | ./voromarmotte --input _list --processors 4
+```
 
 ## System requirements
 
@@ -19,24 +43,7 @@ To use the default fast inference engine, Linux x64 or macOS operating system is
 
 The software was developed and tested on Linux x64, it has not yet been tested on macOS or WSL (Windows Subsystem for Linux).
 
-## Getting the latest version
-
-The recommended way to obtain VoroMarmotte is cloning the VoroMarmotte git repository [https://github.com/kliment-olechnovic/voromarmotte-app](https://github.com/kliment-olechnovic/voromarmotte-app):
-
-```bash
-git clone https://github.com/kliment-olechnovic/voromarmotte-app.git
-cd ./voromarmotte-app
-```
-
-## Building the included software
-
-To buil the needed executables, run the following single command: 
-
-```bash
-./tools/build-all.bash
-```
-
-## Setting up an environment for running VoroMarmotte
+## Optional additional environment setup
 
 For some optional features (using non-default inference engines, running relaxation using OpenMM)
 VoroMarmotte may need to operate inside a suitable conda environment.
