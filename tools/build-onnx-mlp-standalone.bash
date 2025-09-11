@@ -25,12 +25,6 @@ then
 	fi
 fi
 
-if [ "$DETECTED_OS" != "linux" ]
-then
-	echo "Could not detect a supported OS for building the 'onnx-mlp-standalone' tool - it can only be built on Linux systems." 
-	exit 1
-fi
-
 if [ "$DETECTED_OS" != "linux" ] && [ "$DETECTED_OS" != "macos" ]
 then
 	echo "Could not detect a supported OS for building the 'onnx-mlp-standalone' tool - it can only be built on Linux or macOS systems." 
@@ -41,6 +35,13 @@ if [ "$DETECTED_OS" == "linux" ]
 then
 	ORTDIR="$(pwd)/onnx-mlp-standalone-src/onnxruntime-linux-x64-1.19.2"
 	
+	if [ ! -d "$ORTDIR" ]
+	then
+		cd "$(dirname ${ORTDIR})"
+		tar -xf "$(basename ${ORTDIR}).tgz"
+		cd - &> /dev/null
+	fi
+	
 	g++ -O2 -std=c++14 \
 	  ./onnx-mlp-standalone-src/onnx-mlp-standalone.cpp \
 	  -I"${ORTDIR}/include" -L"${ORTDIR}/lib" \
@@ -49,6 +50,13 @@ then
 elif [ "$DETECTED_OS" == "macos" ]
 then
 	ORTDIR="$(pwd)/onnx-mlp-standalone-src/onnxruntime-osx-universal2-1.19.2"
+	
+	if [ ! -d "$ORTDIR" ]
+	then
+		cd "$(dirname ${ORTDIR})"
+		tar -xf "$(basename ${ORTDIR}).tgz"
+		cd - &> /dev/null
+	fi
 	
 	clang++ -O2 -std=c++14 \
 	  ./onnx-mlp-standalone-src/onnx-mlp-standalone.cpp \
