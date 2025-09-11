@@ -1,2 +1,2 @@
-ID           modified                   pseudoenergy       area        best_core_pseudoenergy  best_core_area  ic_fraction        ic_area_pseudoenergy  ic_area_total  ic_best_core_pseudoenergy  ic_best_core_area
-design1.pdb  rebuilt                    -11813.9717984396  9349.44412  -12266.899038869        9044.61393      0.132961795807813  -420.463178151001     1243.11888     -716.134210683967          855.5979
+ID           modified                   pseudoenergy            area                  best_core_pseudoenergy  best_core_area        ic_fraction        ic_area_pseudoenergy  ic_area_total         ic_best_core_pseudoenergy  ic_best_core_area
+design1.pdb  rebuilt                    -11813.987477169581325  9349.444120000011026  -12266.914771829280653  9044.613930000010441  0.132961795807813  -420.466473588740143  1243.118879999999990  -716.137148729162845       855.597900000000323

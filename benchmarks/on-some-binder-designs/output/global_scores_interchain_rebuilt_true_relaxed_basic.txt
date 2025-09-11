@@ -1,4 +1,0 @@
-ID           modified         pseudoenergy       area        best_core_pseudoenergy  best_core_area  ic_fraction
-design1.pdb  rebuilt_relaxed  -1131.3876811518   1328.22438  -1313.14233848059       990.76724       1
-design2.pdb  rebuilt_relaxed  -381.910137200756  1411.1775   -1004.78430784523       800.37765       1
-design3.pdb  rebuilt_relaxed  467.061221849502   1311.52448  -451.834896130071       559.93177       1
