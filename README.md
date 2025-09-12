@@ -37,6 +37,19 @@ Then run the VoroMarmotte application:
 find "./tests/input/" -type f -name '*.pdb' | ./voromarmotte --input _list --processors 4
 ```
 
+## Even quicker start
+
+If running on Linux, running './tools/build-all.bash' is not required because the repository includes executables statically built for Linux x64.
+Thus, to get and try VoroMarmotte on Linux, just run the following commands:
+
+```bash
+git clone https://github.com/kliment-olechnovic/voromarmotte-app.git
+
+cd ./voromarmotte-app
+
+find "./tests/input/" -type f -name '*.pdb' | ./voromarmotte --input _list --processors 4
+```
+
 ## System requirements
 
 To use the default fast inference engine, Linux x64 or macOS operating system is required.
