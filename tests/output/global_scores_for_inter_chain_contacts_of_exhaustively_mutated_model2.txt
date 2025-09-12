@@ -1,6 +1,6 @@
 ID          modified                  pseudoenergy  area     best_core_pseudoenergy  best_core_area  ic_fraction
 model2.pdb  rebuilt_mutated_A_48_ILE  -309.319      913.012  -462.265                721.922         1
-model2.pdb  rebuilt                   -256.453      920.066  -413.657                676.523         1
+model2.pdb  rebuilt                   -256.453      920.066  -413.658                676.523         1
 model2.pdb  rebuilt_mutated_A_48_THR  -206.21       922.91   -365.424                679.367         1
 model2.pdb  rebuilt_mutated_A_48_PHE  -177.032      909.741  -328.959                826.714         1
 model2.pdb  rebuilt_mutated_A_48_ASP  -171.031      924.312  -338.458                680.769         1

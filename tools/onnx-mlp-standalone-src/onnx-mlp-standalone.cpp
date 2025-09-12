@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
 	const char* onnx_path = argv[1];
 	const char* data_path = argv[2];
 
-	Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "mlp");
+	Ort::Env env(ORT_LOGGING_LEVEL_ERROR, "mlp");
 	Ort::SessionOptions so;
 	so.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
 

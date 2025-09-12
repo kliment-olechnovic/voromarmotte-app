@@ -2,11 +2,13 @@
 
 cd "$( cd -- "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-./build-voronota-lt.bash "$1"
+BUILDMODE="$1"
 
-./build-voronota-js.bash "$1"
+./build-voronota-lt.bash "$BUILDMODE"
 
-./build-r-alternative.bash "$1"
+./build-voronota-js.bash "$BUILDMODE"
 
-./build-onnx-mlp-standalone.bash
+./build-r-alternative.bash "$BUILDMODE"
+
+./build-onnx-mlp-standalone.bash "$BUILDMODE"
 

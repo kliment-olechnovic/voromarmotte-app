@@ -4,11 +4,11 @@ model1.pdb  rebuilt                   79.346        1035.037  -260.969          
 model1.pdb  rebuilt_mutated_A_48_THR  91.707        1034.559  -247.281                773.122         1
 model1.pdb  rebuilt_mutated_A_48_ASN  101.935       1036.748  -229.642                775.311         1
 model1.pdb  rebuilt_mutated_A_48_TYR  107.876       1024.617  -228.604                763.18          1
-model1.pdb  rebuilt_mutated_A_48_ASP  118.716       1036.196  -221.174                774.759         1
+model1.pdb  rebuilt_mutated_A_48_ASP  118.715       1036.196  -221.174                774.759         1
 model1.pdb  rebuilt_mutated_A_48_SER  153.138       1031.144  -186.11                 769.707         1
 model1.pdb  rebuilt_mutated_A_48_HIS  169.085       1025.571  -170.562                764.134         1
-model1.pdb  rebuilt_mutated_A_48_ILE  181.472       1035.748  -160.934                774.311         1
-model1.pdb  rebuilt_mutated_A_48_ALA  184.089       1027.474  -156.967                766.037         1
+model1.pdb  rebuilt_mutated_A_48_ILE  181.472       1035.748  -160.935                774.311         1
+model1.pdb  rebuilt_mutated_A_48_ALA  184.088       1027.474  -156.967                766.037         1
 model1.pdb  rebuilt_mutated_A_48_GLN  208.636       1022.043  -134.076                760.606         1
 model1.pdb  rebuilt_mutated_A_48_LEU  214.067       1029.98   -132.889                768.543         1
 model1.pdb  rebuilt_mutated_A_48_TRP  230.77        1021.98   -107.104                760.543         1
@@ -18,4 +18,4 @@ model1.pdb  rebuilt_mutated_A_48_MET  305.45        1031.651  -41.857           
 model1.pdb  rebuilt_mutated_A_48_GLY  331.713       1022.059  -10.327                 760.622         1
 model1.pdb  rebuilt_mutated_A_48_GLU  358.399       1031.647  10.877                  770.21          1
 model1.pdb  rebuilt_mutated_A_48_ARG  367.418       1026.931  26.874                  765.494         1
-model1.pdb  rebuilt_mutated_A_48_LYS  526.56        1028.65   183.194                 767.213         1
+model1.pdb  rebuilt_mutated_A_48_LYS  526.559       1028.65   183.194                 767.213         1
