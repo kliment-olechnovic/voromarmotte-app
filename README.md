@@ -39,7 +39,8 @@ find "./tests/input/" -type f -name '*.pdb' | ./voromarmotte --input _list --pro
 
 ## Even quicker start
 
-If running on Linux, running './tools/build-all.bash' is not required because the repository includes executables statically built for Linux x64.
+On Linux, running './tools/build-all.bash' is most often not required because the VoroMarmotte repository includes executables statically built for Linux x64.
+
 Thus, to get and try VoroMarmotte on Linux, just run the following commands:
 
 ```bash
