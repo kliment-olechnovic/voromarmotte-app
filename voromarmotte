@@ -264,6 +264,50 @@ fi
 
 if [ -n "$MUTATE_SIDECHAINS" ]
 then
+	if [[ "$MUTATE_SIDECHAINS" == "stabilize-interface-"* ]] || [[ "$MUTATE_SIDECHAINS" == "destabilize-interface-"* ]]
+	then
+		read OPTIMIZATION_MODE MUTATE_CHAIN MAX_TRIES <<< "$(echo ${MUTATE_SIDECHAINS} | tr '-' ' ' | tr '_' ' ' | tr '=' ' ' | tr ':' ' ' | awk '{print $1 " " $3 " " $4}')"
+		
+		"$ZEROARG" "${ALLARGS[@]}" --mutate-sidechains "interface-${MUTATE_CHAIN}-every" --output-table-file _stdout > "${TMPLDIR}/single_mutations_table"
+		
+		NUM_OF_SINGLE_MUTATIONS="$(cat ${TMPLDIR}/single_mutations_table | wc -l | awk '{print ($1-1)}')"
+		
+		{
+			cat "${TMPLDIR}/single_mutations_table"
+			
+			if [ "$MAX_TRIES" -gt "$NUM_OF_SINGLE_MUTATIONS" ]
+			then
+				REMAINING_TRIES="$(echo ${MAX_TRIES} ${NUM_OF_SINGLE_MUTATIONS} | awk '{print ($1-$2)}')"
+				
+				cat "${TMPLDIR}/single_mutations_table" \
+				| ${SCRIPTDIR}/tools/suggest-mutations-to-change-binding-stability "$OPTIMIZATION_MODE" "$REMAINING_TRIES" 1 \
+				| sed "s|^|${INFILE} |" \
+				| "$ZEROARG" "${ALLARGS[@]}" --input _list --mutate-sidechains _list --output-table-file _stdout \
+				| tail -n +2
+			fi
+		} \
+		| {
+			if [ "$OPTIMIZATION_MODE" == "stabilize" ]
+			then
+				${SCRIPTDIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns ic_area_pseudoenergy -multipliers -1 -tolerances 0.0');"
+			else
+				${SCRIPTDIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns ic_area_pseudoenergy -multipliers 1 -tolerances 0.0');"
+			fi
+		} \
+		| column -t \
+		> "${TMPLDIR}/final_mutations_table_ordered"
+		
+		if [ -n "$OUTPUT_TABLE_FILE" ] && [ "$OUTPUT_TABLE_FILE" != "_stdout" ]
+		then
+			mkdir -p "$(dirname "$OUTPUT_TABLE_FILE")"
+			cat "$TMPLDIR/final_mutations_table_ordered" > "$OUTPUT_TABLE_FILE"
+		else
+			cat "$TMPLDIR/final_mutations_table_ordered"
+		fi
+		
+		exit 0
+	fi
+	
 	if [[ "$MUTATE_SIDECHAINS" == "interface"* ]]
 	then
 		read MUTATE_CHAIN MUTATE_TO_RNAME <<< "$(echo ${MUTATE_SIDECHAINS} | tr '-' ' ' | tr '_' ' ' | tr '=' ' ' | tr ':' ' ' | awk '{print $2 " " $3}')"

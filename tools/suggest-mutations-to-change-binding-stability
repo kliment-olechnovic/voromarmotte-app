@@ -1,0 +1,83 @@
+#!/bin/bash
+
+export LANG=C
+export LC_ALL=C
+
+MODE="$1"
+N_TO_OUTPUT="$2"
+MIN_SEQ_SEP="$3"
+LASTARG="$4"
+
+if [ -z "$MODE" ] || [ -z "$N_TO_OUTPUT" ] || [ -z "$MIN_SEQ_SEP" ] || [ -n "$LASTARG" ]
+then
+	echo >&2 "Error: invalid number of command-line arguments, must be exactly three - mode ('stabilize' or 'destabilize'), number of results to otputput, minimum sequence separation between mutations."
+	exit 1
+fi
+
+if [ "$MODE" != "stabilize" ] && [ "$MODE" != "destabilize" ]
+then
+	echo >&2 "Error: invalid value '${MODE}' for the mode, must be 'stabilize' or 'destabilize'"
+	exit 1
+fi
+
+readonly TMPLDIR=$(mktemp -d)
+trap "rm -r $TMPLDIR" EXIT
+
+cd "$TMPLDIR"
+
+cat > ./raw_input
+
+if [ "$MODE" == "stabilize" ]
+then
+	cat ./raw_input | tail -n +2 | awk '{print $2 " " $3 " " $8}' > ./table_initial
+elif [ "$MODE" == "destabilize" ]
+then
+	cat ./raw_input | tail -n +2 | awk '{print $2 " " (0-$3) " " (0-$8)}' > ./table_initial
+fi
+
+read BASE_SCORE_FULL BASE_SCORE_IC <<< "$(cat ./table_initial | awk '{if($1=="rebuilt"){print $2 " " $3}}')"
+
+cat ./table_initial \
+| awk -v bsf="$BASE_SCORE_FULL" -v bsic="$BASE_SCORE_IC" '{if($2<bsf && $3<bsic){print $1 " " ((bsf-$2)+2*(bsic-$3))}}' \
+| sed 's/^rebuilt_mutated_//' \
+| sort -n -k2,2 -r \
+> ./table_m1
+
+cat ./table_m1 \
+| tr '_' ' ' \
+| head -n 2048 \
+| awk '{row[NR]=$0} END{for(i=1;i<=NR;i++) for(j=i+1;j<=NR;j++) print row[i] "\t" row[j]}' \
+| awk '{if($2!=$6){print $1 " " $2 " " $3 " " $5 " " $6 " " $7 " = " (($4+$8)/2)}}' \
+| awk -v mss="$MIN_SEQ_SEP" '{if((($2-$5)>=mss || ($5-$2)>=mss) && (($2-$8)>=mss || ($8-$2)>=mss) && (($5-$8)>=mss || ($8-$5)>=mss)){print $0}}' \
+| tr ' ' '_' \
+| sed 's/_=_/ /' \
+| sort -n -k2,2 -r \
+> table_m2
+
+cat ./table_m1 \
+| tr '_' ' ' \
+| head -n 128 \
+| awk '{row[NR]=$0} END{for(i=1;i<=NR;i++) for(j=i+1;j<=NR;j++) for(k=j+1;k<=NR;k++) print row[i] "\t" row[j] "\t" row[k]}' \
+| awk '{if($2!=$6 && $2!=$10 && $6!=$10){print $1 " " $2 " " $3 " " $5 " " $6 " " $7 " " $9 " " $10 " " $11 " = " (($4+$8+$12)/3)}}' \
+| awk -v mss="$MIN_SEQ_SEP" '{if((($2-$5)>=mss || ($5-$2)>=mss) && (($2-$8)>=mss || ($8-$2)>=mss) && (($5-$8)>=mss || ($8-$5)>=mss)){print $0}}' \
+| tr ' ' '_' \
+| sed 's/_=_/ /' \
+| sort -n -k2,2 -r \
+> table_m3
+
+cat ./table_m1 \
+| tr '_' ' ' \
+| head -n 64 \
+| awk '{row[NR]=$0} END{for(i=1;i<=NR;i++) for(j=i+1;j<=NR;j++) for(k=j+1;k<=NR;k++) for(m=k+1;m<=NR;m++) print row[i] "\t" row[j] "\t" row[k] "\t" row[m]}' \
+| awk '{if($2!=$6 && $2!=$10 && $2!=$14 && $6!=$10 && $6!=$14 && $10!=$14){print $1 " " $2 " " $3 " " $5 " " $6 " " $7 " " $9 " " $10 " " $11 " " $13 " " $14 " " $15 " = " (($4+$8+$12+$16)/4)}}' \
+| awk -v mss="$MIN_SEQ_SEP" '{if((($2-$5)>=mss || ($5-$2)>=mss) && (($2-$8)>=mss || ($8-$2)>=mss) && (($2-$11)>=mss || ($11-$2)>=mss) && (($5-$8)>=mss || ($8-$5)>=mss) && (($5-$11)>=mss || ($11-$5)>=mss) && (($8-$11)>=mss || ($11-$8)>=mss)){print $0}}' \
+| tr ' ' '_' \
+| sed 's/_=_/ /' \
+| sort -n -k2,2 -r \
+> table_m4
+
+cat ./table_m2 ./table_m3 ./table_m4 \
+| sort -n -k2,2 -r \
+| head -n "$N_TO_OUTPUT" \
+| awk '{print $1}'
+
