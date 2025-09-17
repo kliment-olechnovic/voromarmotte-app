@@ -270,21 +270,14 @@ then
 		
 		"$ZEROARG" "${ALLARGS[@]}" --mutate-sidechains "interface-${MUTATE_CHAIN}-every" --output-table-file _stdout > "${TMPLDIR}/single_mutations_table"
 		
-		NUM_OF_SINGLE_MUTATIONS="$(cat ${TMPLDIR}/single_mutations_table | wc -l | awk '{print ($1-1)}')"
-		
 		{
 			cat "${TMPLDIR}/single_mutations_table"
 			
-			if [ "$MAX_TRIES" -gt "$NUM_OF_SINGLE_MUTATIONS" ]
-			then
-				REMAINING_TRIES="$(echo ${MAX_TRIES} ${NUM_OF_SINGLE_MUTATIONS} | awk '{print ($1-$2)}')"
-				
-				cat "${TMPLDIR}/single_mutations_table" \
-				| ${SCRIPTDIR}/tools/suggest-mutations-to-change-binding-stability "$OPTIMIZATION_MODE" "$REMAINING_TRIES" 1 \
-				| sed "s|^|${INFILE} |" \
-				| "$ZEROARG" "${ALLARGS[@]}" --input _list --mutate-sidechains _list --output-table-file _stdout \
-				| tail -n +2
-			fi
+			cat "${TMPLDIR}/single_mutations_table" \
+			| ${SCRIPTDIR}/tools/suggest-mutations-to-change-binding-stability "$OPTIMIZATION_MODE" "$MAX_TRIES" \
+			| sed "s|^|${INFILE} |" \
+			| "$ZEROARG" "${ALLARGS[@]}" --input _list --mutate-sidechains _list --output-table-file _stdout \
+			| tail -n +2
 		} \
 		| {
 			if [ "$OPTIMIZATION_MODE" == "stabilize" ]

@@ -10,5 +10,7 @@ BUILDMODE="$1"
 
 ./build-r-alternative.bash "$BUILDMODE"
 
+./build-sample-multiple-mutations.bash "$BUILDMODE"
+
 ./build-onnx-mlp-standalone.bash "$BUILDMODE"
 
