@@ -176,4 +176,4 @@ pymol "./tests/input/set1/target.pdb" "show_inter_chain_interface.py"
 
 # Analyzing and improving binders
 
-Plese see [this page](./benchmarks/on-some-binder-designs/ABOUT.md) that describes possible usages of VoroMarmotte for analyzing and improving protein binder designs.
+Plese see [this page](./benchmarks/on-some-binder-designs-v2/ABOUT.md) that describes possible usages of VoroMarmotte for analyzing and improving protein binder designs.
