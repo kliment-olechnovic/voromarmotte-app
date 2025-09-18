@@ -52,6 +52,8 @@ The `stabilize-interface-A-1000-8` specifier in the above code orders the follow
 * score every of the generated multi-point mutations;
 * return the table of all the results (including both single-point and multi-point mutations), ordered by the `ic_area_pseudoenergy` column.
 
+Note that alternative parameters can be freely specified using the same `stabilize-interface-` prefix, e.g. `stabilize-interface-A-10000-10`, `stabilize-interface-B-1000-2`, etc.
+
 The links to the produces result tables are:
 [results for design1](./output/suggested_mutations_to_increase_binding_stability/design1/global_scores_of_mutations.txt),
 [results for design2](./output/suggested_mutations_to_increase_binding_stability/design2/global_scores_of_mutations.txt),
