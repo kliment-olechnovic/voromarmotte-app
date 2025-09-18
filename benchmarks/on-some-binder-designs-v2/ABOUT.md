@@ -28,7 +28,7 @@ The 'best_core_...' values show what scores can theoretically be achieved if sor
 
 ## Finding mutations that improve interface pseudo-energy
 
-Now, for every initial input structure, let us use VoroMarmotte to suggest mutations of the residues of chain A that improve interface pseudoenergy:
+Now, for every initial input structure, let us use VoroMarmotte to suggest mutations of the residues of chain A that improve interface pseudo-energy:
 
 ```bash
 find ./input/ -type f -name '*.pdb' \
@@ -97,4 +97,22 @@ Below are `design2.pdb` interfaces before and after the mutations, showed togeth
 ![](./output/example.png)
 
 Obviously, we cannot expect to turn every contact blue with just four mutations - more mutations can help, although we probably must be cautious to not break the structure with them.
+
+## Finding mutations that destabilize interface
+
+It is also possible to use VoroMarmotte to suggest mutations of the residues of chain A that make interface pseudo-energy worse, for example:
+
+```bash
+find ./input/ -type f -name '*.pdb' \
+| while read -r STRUCTFILE
+do
+	STRUCTNAME="$(basename ${STRUCTFILE} .pdb)"
+
+	../../voromarmotte \
+	  --input "$STRUCTFILE" \
+	  --subselect-contacts '[-a1 [-chain A]]' \
+	  --mutate-sidechains 'destabilize-interface-A-100-2' \
+	  --output-table-file "./output/suggested_mutations_to_decrease_binding_stability/${STRUCTNAME}/global_scores_of_mutations.txt" \
+	  --processors 16
+done
 

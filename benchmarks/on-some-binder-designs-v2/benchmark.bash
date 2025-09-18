@@ -69,5 +69,21 @@ done
 
 ################################################################################
 
+find ./input/ -type f -name '*.pdb' \
+| while read -r STRUCTFILE
+do
+	STRUCTNAME="$(basename ${STRUCTFILE} .pdb)"
+	OUTDIR="./output/suggested_mutations_to_decrease_binding_stability/${STRUCTNAME}"
+	MUTATIONSCORESFILE="${OUTDIR}/global_scores_of_mutations.txt"
+	
+	[ -s "$MUTATIONSCORESFILE" ] || \
+	../../voromarmotte \
+	  --input "$STRUCTFILE" \
+	  --subselect-contacts '[-a1 [-chain A]]' \
+	  --mutate-sidechains destabilize-interface-A-100-2 \
+	  --output-table-file "$MUTATIONSCORESFILE" \
+	  --processors 16
+done
 
+################################################################################
 
