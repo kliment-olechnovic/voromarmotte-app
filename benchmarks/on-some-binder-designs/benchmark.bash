@@ -80,7 +80,7 @@ do
 	REQUESTSFILE="${OUTDIR}/multiple_mutation_requests.txt"
 	
 	[ -s "$REQUESTSFILE" ] || \
-	../../meta/suggest-mutations-to-increase-binding-stability \
+	./suggest-mutations-to-increase-binding-stability \
 	  --input-table "./output/global_scores_mutated_to_every.txt" \
 	  --file-id "${STRUCTFILE}" \
 	  --output-dir "${OUTDIR}"

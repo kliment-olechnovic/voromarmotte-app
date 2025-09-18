@@ -61,10 +61,10 @@ We can also specify multiple mutations one after another, e.g. `--mutate-sidecha
 We can also mutate every chain A interface residue to a specific residue, e.g. `--mutate-sidechains 'interface-A-PHE'`.
 So, to run on a cluster, we can list all the mutations we need and consider them in parallel.
 
-When we have the `global_scores_mutated_to_every.txt` table, we can use the [suggest-mutations-to-increase-binding-stability](../../meta/suggest-mutations-to-increase-binding-stability) script to generate priority-ranked multi-point mutations for every input structure file, for example:
+When we have the `global_scores_mutated_to_every.txt` table, we can use the [suggest-mutations-to-increase-binding-stability](./suggest-mutations-to-increase-binding-stability) script to generate priority-ranked multi-point mutations for every input structure file, for example:
 
 ```bash
-../../meta/suggest-mutations-to-increase-binding-stability \
+./suggest-mutations-to-increase-binding-stability \
   --input-table "./output/global_scores_mutated_to_every.txt" \
   --file-id "./input/design2.pdb" \
   --output-dir "./output/suggested_mutations_to_increase_binding_stability/design2"
