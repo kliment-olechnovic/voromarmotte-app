@@ -7,10 +7,12 @@ export LC_ALL=C
 
 MODE="$1"
 N_TO_OUTPUT="$2"
+MAX_MUTATIONS="$3"
+LASTARG="$4"
 
-if [ -z "$MODE" ] || [ -z "$N_TO_OUTPUT" ] || [ -n "$LASTARG" ]
+if [ -z "$MODE" ] || [ -z "$N_TO_OUTPUT" ] || [ -z "$MAX_MUTATIONS" ] || [ -n "$LASTARG" ]
 then
-	echo >&2 "Error: invalid number of command-line arguments, must be exactly two - mode ('stabilize' or 'destabilize') and number of results to otputput."
+	echo >&2 "Error: invalid number of command-line arguments, must be exactly three - mode ('stabilize' or 'destabilize'), number of results to otputput, max number of simultaneous mutations."
 	exit 1
 fi
 
@@ -48,7 +50,7 @@ cat ./table_initial \
 cd - &> /dev/null
 
 cat "${TMPLDIR}/table_m1" \
-| ./sample-multiple-mutations 42 1 10 "$N_TO_OUTPUT" \
+| ./sample-multiple-mutations 42 1 "$MAX_MUTATIONS" "$N_TO_OUTPUT" \
 | tr ' ' '_'
 
 exit 0

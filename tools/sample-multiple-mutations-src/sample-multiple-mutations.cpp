@@ -174,15 +174,32 @@ int main(const int argc, const char** argv)
 		std::mt19937_64 rng(seed);
 		std::poisson_distribution<int> p_distribution(lambda);
 
-		for(int i=0;i<number_of_results;i++)
+		std::size_t consecutive_failed_tries=0;
+		std::set<std::string> set_of_results;
+
+		while(set_of_results.size()<number_of_results && consecutive_failed_tries<100)
 		{
 			const int sampled_number_of_mutations=std::min(p_distribution(rng)+2, maximum_mutations);
 			const std::vector<std::size_t> ids=sample_multiple_mutations(rng, reference_single_mutations, sampled_number_of_mutations);
+			std::ostringstream strout;
 			for(std::size_t j=0;j<ids.size();j++)
 			{
 				const SingleMutation& sm=reference_single_mutations[ids[j]];
-				std::cout << sm.position_id << " " << sm.residue_name << ((j+1)<ids.size() ? " " : "\n");
+				strout << sm.position_id << " " << sm.residue_name << ((j+1)<ids.size() ? " " : "");
 			}
+			if(set_of_results.insert(strout.str()).second)
+			{
+				consecutive_failed_tries=0;
+			}
+			else
+			{
+				consecutive_failed_tries++;
+			}
+		}
+
+		for(std::set<std::string>::const_iterator it=set_of_results.begin();it!=set_of_results.end();++it)
+		{
+			std::cout << (*it) << "\n";
 		}
 	}
 	catch(const std::exception& e)
