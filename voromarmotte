@@ -55,9 +55,8 @@ function substitute_in_string
 export LANG=C
 export LC_ALL=C
 
-SCRIPTDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+VOROMARMOTTE_ROOT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-readonly ZEROARG=$0
 ALLARGS=("$@")
 
 INFILE=""
@@ -138,6 +137,10 @@ do
 		SBATCH_PARAMETERS="$OPTARG"
 		shift
 		;;
+	--voromarmotte-root-dir)
+		VOROMARMOTTE_ROOT_DIR="$OPTARG"
+		shift
+		;;
 	-h|--help)
 		HELP_MODE="true"
 		;;
@@ -151,6 +154,22 @@ done
 if [ "$HELP_MODE" == "true" ]
 then
 	print_help_and_exit
+fi
+
+################################################################################
+
+if [ ! -s "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" ] || [ ! -s "${VOROMARMOTTE_ROOT_DIR}/tools/voronota-js" ]
+then
+	if [ -n "$SLURM_JOB_ID" ]
+	then
+		VOROMARMOTTE_ROOT_DIR="$(dirname -- "$(squeue -j ${SLURM_JOB_ID} -h -O Command)")"
+	fi
+fi
+
+if [ ! -s "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" ] || [ ! -s "${VOROMARMOTTE_ROOT_DIR}/tools/voronota-js" ]
+then
+	echo >&2 "Error: cannot detect the VoroMarmotte software root directory, provide it with the --voromarmotte-root-dir oprion"
+	exit 1
 fi
 
 ################################################################################
@@ -254,11 +273,11 @@ then
 	| {
 		if [ -z "$SBATCH_PARAMETERS" ]
 		then
-			xargs -L 1 -P "$PROCESSORS_FOR_LEVEL_ONE" "$ZEROARG" "${ALLARGS[@]}" --processors "$PROCESSORS_FOR_LEVEL_TWO"
+			xargs -L 1 -P "$PROCESSORS_FOR_LEVEL_ONE" "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" "${ALLARGS[@]}" --processors "$PROCESSORS_FOR_LEVEL_TWO"
 		else
 			mkdir -p "${TMPLDIR}/slurm_logs"
 			
-			xargs -L 1 sbatch -o "${TMPLDIR}/slurm_logs/slurmjob-%j.out" -e "${TMPLDIR}/slurm_logs/slurmjob-%j.err" $SBATCH_PARAMETERS "$ZEROARG" "${ALLARGS[@]}" --processors 1 \
+			xargs -L 1 sbatch -o "${TMPLDIR}/slurm_logs/slurmjob-%j.out" -e "${TMPLDIR}/slurm_logs/slurmjob-%j.err" $SBATCH_PARAMETERS "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" "${ALLARGS[@]}" --processors 1 --voromarmotte-root-dir "$VOROMARMOTTE_ROOT_DIR" \
 			| grep -E '^Submitted batch job ' \
 			| awk '{print $4}' \
 			> "$TMPLDIR/slurm_job_ids"
@@ -279,7 +298,7 @@ then
 	| sort \
 	| xargs -L 1 cat \
 	| awk '{if(NR==1 || $1!="ID") print $0}' \
-	| ${SCRIPTDIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns pseudoenergy -multipliers -1 -tolerances 0.0');" \
+	| ${VOROMARMOTTE_ROOT_DIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns pseudoenergy -multipliers -1 -tolerances 0.0');" \
 	| column -t \
 	> "$TMPLDIR/full_output_table"
 	
@@ -316,11 +335,11 @@ then
 			exit 1
 		fi
 		
-		"$ZEROARG" "${ALLARGS[@]}" --mutate-sidechains "interface-${MUTATE_CHAIN}-every" --output-table-file _stdout \
+		"${VOROMARMOTTE_ROOT_DIR}/voromarmotte" "${ALLARGS[@]}" --mutate-sidechains "interface-${MUTATE_CHAIN}-every" --output-table-file _stdout \
 		> "${TMPLDIR}/single_mutations_table"
 		
 		cat "${TMPLDIR}/single_mutations_table" \
-		| ${SCRIPTDIR}/tools/suggest-mutations-to-change-binding-stability "$OPTIMIZATION_MODE" "$MAX_TRIES" "$MAX_MUTATIONS" \
+		| ${VOROMARMOTTE_ROOT_DIR}/tools/suggest-mutations-to-change-binding-stability "$OPTIMIZATION_MODE" "$MAX_TRIES" "$MAX_MUTATIONS" \
 		| grep -E '.' \
 		> "${TMPLDIR}/suggested_multipoint_mutations"
 		
@@ -331,16 +350,16 @@ then
 			then
 				cat "${TMPLDIR}/suggested_multipoint_mutations" \
 				| sed "s|^|${INFILE} |" \
-				| "$ZEROARG" "${ALLARGS[@]}" --input _list --mutate-sidechains _list --output-table-file _stdout \
+				| "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" "${ALLARGS[@]}" --input _list --mutate-sidechains _list --output-table-file _stdout \
 				| tail -n +2
 			fi
 		} \
 		| {
 			if [ "$OPTIMIZATION_MODE" == "stabilize" ]
 			then
-				${SCRIPTDIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns ic_area_pseudoenergy -multipliers -1 -tolerances 0.0');"
+				${VOROMARMOTTE_ROOT_DIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns ic_area_pseudoenergy -multipliers -1 -tolerances 0.0');"
 			else
-				${SCRIPTDIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns ic_area_pseudoenergy -multipliers 1 -tolerances 0.0');"
+				${VOROMARMOTTE_ROOT_DIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns ic_area_pseudoenergy -multipliers 1 -tolerances 0.0');"
 			fi
 		} \
 		| column -t \
@@ -361,7 +380,7 @@ then
 	then
 		read MUTATE_CHAIN MUTATE_TO_RNAME <<< "$(echo ${MUTATE_SIDECHAINS} | tr '-' ' ' | tr '_' ' ' | tr '=' ' ' | tr ':' ' ' | awk '{print $2 " " $3}')"
 		{
-			${SCRIPTDIR}/tools/voronota-lt \
+			${VOROMARMOTTE_ROOT_DIR}/tools/voronota-lt \
 			  --input "$INFILE" \
 			  --compute-only-inter-chain-contacts \
 			  --print-contacts-residue-level \
@@ -399,14 +418,14 @@ then
 			cat "$TMPLDIR/input_mutations_list"
 			echo "${INFILE} any any original"
 		} \
-		| "$ZEROARG" "${ALLARGS[@]}" --input _list --mutate-sidechains _list
+		| "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" "${ALLARGS[@]}" --input _list --mutate-sidechains _list
 		
 		exit 0
 	fi
 	
 	if [[ "$MUTATE_SIDECHAINS" == *"every"* ]]
 	then
-		${SCRIPTDIR}/tools/voronota-lt \
+		${VOROMARMOTTE_ROOT_DIR}/tools/voronota-lt \
 		  --input "$INFILE" \
 		  --write-input-balls-to-file "$TMPLDIR/all_input_atomic_balls" \
 		  --exit-before-calculations \
@@ -447,7 +466,7 @@ then
 			cat "$TMPLDIR/input_mutations_list"
 			echo "${INFILE} any any original"
 		} \
-		| "$ZEROARG" "${ALLARGS[@]}" --input _list --mutate-sidechains _list
+		| "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" "${ALLARGS[@]}" --input _list --mutate-sidechains _list
 		
 		exit 0
 	fi
@@ -469,7 +488,7 @@ then
 		fi
 	fi
 	
-	cat "$INFILE" | ${SCRIPTDIR}/tools/voronota-js-pdb-utensil-run-faspr --mutate "$MUTATE_SIDECHAINS" > "${TMPLDIR}/rebuilt.pdb"
+	cat "$INFILE" | ${VOROMARMOTTE_ROOT_DIR}/tools/voronota-js-pdb-utensil-run-faspr --mutate "$MUTATE_SIDECHAINS" > "${TMPLDIR}/rebuilt.pdb"
 	
 	if [ ! -s "${TMPLDIR}/rebuilt.pdb" ]
 	then
@@ -493,7 +512,7 @@ then
 	
 	INPUTMODIFICATION="${INPUTMODIFICATION}_relaxed"
 	
-	${SCRIPTDIR}/tools/relax-with-openmm ${RELAX_WITH_OPENMM_PARAMS} --input "$INFILE" --output "${TMPLDIR}/relaxed.pdb" --trim-output
+	${VOROMARMOTTE_ROOT_DIR}/tools/relax-with-openmm ${RELAX_WITH_OPENMM_PARAMS} --input "$INFILE" --output "${TMPLDIR}/relaxed.pdb" --trim-output
 	
 	if [ ! -s "${TMPLDIR}/relaxed.pdb" ]
 	then
@@ -534,9 +553,9 @@ then
 	cp "$INFILE" "$OUTPUT_ATOMS_FILE"
 fi
 
-${SCRIPTDIR}/tools/calculate_vcblocks_and_run_trained_mlp_classifier.bash \
+${VOROMARMOTTE_ROOT_DIR}/tools/calculate_vcblocks_and_run_trained_mlp_classifier.bash \
   "$INFERENCE_ENGINE" \
-  "${SCRIPTDIR}/tools/trained_nn_models/training_5870c524a74c0e90c4e5a6ea40aac7bb/mlp_epoch_232.pt" \
+  "${VOROMARMOTTE_ROOT_DIR}/tools/trained_nn_models/training_5870c524a74c0e90c4e5a6ea40aac7bb/mlp_epoch_232.pt" \
   "$INFILE" \
   "$SUBSELECT_CONTACTS" \
 > "${TMPLDIR}/table"
@@ -549,7 +568,7 @@ fi
 
 cd "$TMPLDIR"
 
-${SCRIPTDIR}/tools/r-alternative "$(basename ${INFILE})" "$INPUTMODIFICATION"
+${VOROMARMOTTE_ROOT_DIR}/tools/r-alternative "$(basename ${INFILE})" "$INPUTMODIFICATION"
 
 cd - &> /dev/null
 
@@ -601,7 +620,7 @@ then
 		} > "${TMPLDIR}/vscript_to_pymol.vs"
 		
 		echo "voronota_source('-file', '${TMPLDIR}/vscript_to_pymol.vs');" \
-		| ${SCRIPTDIR}/tools/voronota-js
+		| ${VOROMARMOTTE_ROOT_DIR}/tools/voronota-js
 		
 		{
 			cat "${TMPLDIR}/pymol_draw.py"

@@ -14,6 +14,9 @@ int main(int argc, char* argv[])
 	Ort::SessionOptions so;
 	so.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
 
+	so.SetIntraOpNumThreads(1);
+	so.SetInterOpNumThreads(1);
+
 	Ort::Session sess(env, onnx_path, so);
 	Ort::AllocatorWithDefaultOptions allocator;
 
