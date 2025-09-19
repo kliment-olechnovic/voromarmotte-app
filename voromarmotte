@@ -34,7 +34,7 @@ Examples:
     
     ./voromarmotte  --input ./model.pdb --subselect-contacts '[-a1 [-chain A]]' --output-per-contact ./table_of_contacts.txt > ./table.txt
     
-    find ./models/ -type f -name '*.pdb' | ./voromarmotte --input _list --subselect-contacts '[-inter-chain]' > ./table.txt
+    find ./models/ -type f -name '*.pdb' | ./voromarmotte --input _list --subselect-contacts '[-inter-chain]' --processors 16 > ./table.txt
 
 EOF
 exit 1
@@ -73,6 +73,7 @@ OUTPUT_VSCRIPT=""
 OUTPUT_PYMOL_VSCRIPT=""
 MAX_PROCESSORS="1"
 SBATCH_PARAMETERS=""
+STDIN_FILE="_stream"
 HELP_MODE="false"
 
 while [[ $# > 0 ]]
@@ -141,6 +142,10 @@ do
 		VOROMARMOTTE_ROOT_DIR="$OPTARG"
 		shift
 		;;
+	--stdin-file)
+		STDIN_FILE="$OPTARG"
+		shift
+		;;
 	-h|--help)
 		HELP_MODE="true"
 		;;
@@ -183,6 +188,12 @@ fi
 if [ "$INFILE" != "_list" ] && [ ! -s "$INFILE" ]
 then
 	echo >&2 "Error: input file '$INFILE' does not exist"
+	exit 1
+fi
+
+if [ "$STDIN_FILE" != "_stream" ] && [ ! -s "$STDIN_FILE" ]
+then
+	echo >&2 "Error: stdin replacement file '$STDIN_FILE' does not exist"
 	exit 1
 fi
 
@@ -238,7 +249,15 @@ trap "rm -r $TMPLDIR" EXIT
 
 if [ "$INFILE" == "_list" ]
 then
-	cat | grep -E . | sort | uniq > "$TMPLDIR/input_list"
+	{
+		if [ "$STDIN_FILE" == "_stream" ]
+		then
+			cat
+		else
+			cat "$STDIN_FILE"
+		fi
+	} \
+	| grep -E . | sort | uniq > "$TMPLDIR/input_list"
 	
 	if [ ! -s "$TMPLDIR/input_list" ]
 	then
@@ -246,53 +265,62 @@ then
 		exit 1
 	fi
 	
-	mkdir -p "$TMPLDIR/children_tables"
-	
-	PROCESSORS_FOR_LEVEL_ONE="$MAX_PROCESSORS"
-	PROCESSORS_FOR_LEVEL_TWO="1"
-	
 	NUM_OF_INPUTS="$(cat ${TMPLDIR}/input_list | wc -l)"
 	
-	if [ "$NUM_OF_INPUTS" -lt "$MAX_PROCESSORS" ]
-	then
-		PROCESSORS_FOR_LEVEL_ONE="$NUM_OF_INPUTS"
-		PROCESSORS_FOR_LEVEL_TWO="$(echo ${MAX_PROCESSORS} ${NUM_OF_INPUTS} | awk '{print int($1/$2)}')"
-	fi
+	mkdir -p "$TMPLDIR/children_tables"
 	
-	cat "$TMPLDIR/input_list" \
-	| {
-	if [ "$MUTATE_SIDECHAINS" == "_list" ]
+	if [ "$MAX_PROCESSORS" -lt "2" ] || [ "$NUM_OF_INPUTS" == "1" ]
 	then
-		cat \
-		| sed 's/^\s*\(\S\+\)\s\+\(.*\)$/\1_FIRSTGAP_\2/' | tr ' ' '_' | tr '\t' '_' | sed 's/_FIRSTGAP_/ /' \
-		| awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --mutate-sidechains " $2 " --output-table-file " outdir "/" NR ".pdb"}'
-	else
-		awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --output-table-file " outdir "/" NR ".pdb"}'
-	fi
-	} \
-	| {
-		if [ -z "$SBATCH_PARAMETERS" ]
+		cat "$TMPLDIR/input_list" \
+		| {
+		if [ "$MUTATE_SIDECHAINS" == "_list" ]
 		then
-			xargs -L 1 -P "$PROCESSORS_FOR_LEVEL_ONE" "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" "${ALLARGS[@]}" --processors "$PROCESSORS_FOR_LEVEL_TWO"
+			cat \
+			| sed 's/^\s*\(\S\+\)\s\+\(.*\)$/\1_FIRSTGAP_\2/' | tr ' ' '_' | tr '\t' '_' | sed 's/_FIRSTGAP_/ /' \
+			| awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --mutate-sidechains " $2 " --output-table-file " outdir "/" NR ".pdb"}'
 		else
-			mkdir -p "${TMPLDIR}/slurm_logs"
-			
-			xargs -L 1 sbatch -o "${TMPLDIR}/slurm_logs/slurmjob-%j.out" -e "${TMPLDIR}/slurm_logs/slurmjob-%j.err" $SBATCH_PARAMETERS "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" "${ALLARGS[@]}" --processors 1 --voromarmotte-root-dir "$VOROMARMOTTE_ROOT_DIR" \
-			| grep -E '^Submitted batch job ' \
-			| awk '{print $4}' \
-			> "$TMPLDIR/slurm_job_ids"
-			
-			sleep 1
-			REMAINING_SLURM_JOBS="$(squeue | grep -f "$TMPLDIR/slurm_job_ids" | wc -l)"
-			while [ "$REMAINING_SLURM_JOBS" -gt "0" ]
-			do
-				sleep 2
-				REMAINING_SLURM_JOBS="$(squeue | grep -f "$TMPLDIR/slurm_job_ids" | wc -l)"
-			done
-			
-			find "$TMPLDIR/slurm_logs/" -type f -not -empty | xargs -L 1 cat >&2
+			awk -v outdir="$TMPLDIR/children_tables" '{print "--input " $1 " --output-table-file " outdir "/" NR ".pdb"}'
 		fi
-	}
+		} \
+		| xargs -L 1 -P 1 "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" "${ALLARGS[@]}" --processors 1 --sbatch-parameters '' --voromarmotte-root-dir "$VOROMARMOTTE_ROOT_DIR"
+	else
+		SIZE_OF_PORTION="$(echo "a=$NUM_OF_INPUTS; b=$MAX_PROCESSORS; if(a%b) a/b+1 else a/b" | bc)"
+		
+		if [ "$SIZE_OF_PORTION" -gt "19997" ]
+		then
+			SIZE_OF_PORTION="19997"
+		fi
+		
+		mkdir -p "$TMPLDIR/portions"
+		
+		split -l "$SIZE_OF_PORTION" "$TMPLDIR/input_list" "$TMPLDIR/portions/portion_"
+		
+		find $TMPLDIR/portions/ -type f -not -empty \
+		| awk -v outdir="$TMPLDIR/children_tables" '{print "--stdin-file " $1 " --output-table-file " outdir "/" NR ".txt"}' \
+		| {
+			if [ -z "$SBATCH_PARAMETERS" ]
+			then
+				xargs -L 1 -P "$MAX_PROCESSORS" "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" "${ALLARGS[@]}" --processors 1 --sbatch-parameters '' --input _list --voromarmotte-root-dir "$VOROMARMOTTE_ROOT_DIR"
+			else
+				mkdir -p "${TMPLDIR}/slurm_logs"
+				
+				xargs -L 1 -P 1 sbatch -o "${TMPLDIR}/slurm_logs/slurmjob-%j.out" -e "${TMPLDIR}/slurm_logs/slurmjob-%j.err" $SBATCH_PARAMETERS "${VOROMARMOTTE_ROOT_DIR}/voromarmotte" "${ALLARGS[@]}" --processors 1 --sbatch-parameters '' --input _list --voromarmotte-root-dir "$VOROMARMOTTE_ROOT_DIR" \
+				| grep -E '^Submitted batch job ' \
+				| awk '{print $4}' \
+				> "$TMPLDIR/slurm_job_ids"
+				
+				sleep 1
+				REMAINING_SLURM_JOBS="$(squeue | grep -f "$TMPLDIR/slurm_job_ids" | wc -l)"
+				while [ "$REMAINING_SLURM_JOBS" -gt "0" ]
+				do
+					sleep 1
+					REMAINING_SLURM_JOBS="$(squeue | grep -f "$TMPLDIR/slurm_job_ids" | wc -l)"
+				done
+				
+				find "$TMPLDIR/slurm_logs/" -type f -not -empty | xargs -L 1 cat >&2
+			fi
+		}
+	fi
 	
 	find "$TMPLDIR/children_tables" -type f -not -empty \
 	| sort \
