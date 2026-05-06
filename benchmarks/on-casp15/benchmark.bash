@@ -46,17 +46,17 @@ df1=df1[which(df1$ic_fraction>0.0),];
 
 df1$score0=0-df1$ic_area_total;
 
-df1$score1=df1$ic_area_pseudoenergy/df1$ic_area_total;
-df1$score1=(tanh(0-df1$score1-0.6)+1)/2;
+df1$score1=0-df1$ic_area_pseudoenergy/df1$ic_area_total;
 
-df1$score2=df1$pseudoenergy/df1$area;
-df1$score2=(tanh(0-df1$score2-0.6)+1)/2;
+df1$score2=0-df1$pseudoenergy/df1$area;
 
 df1$score3=df1$ic_best_core_area/df1$ic_area_total;
 
 df1$score4=0-df1$ic_area_pseudoenergy;
 
 df1$score5=0-df1$pseudoenergy;
+
+df1$score12=(0-df1$pseudoenergy/df1$area)*(1-df1$ic_fraction^2);
 
 df2=read.table("cadscores.tsv", header=TRUE, stringsAsFactors=FALSE);
 
@@ -84,6 +84,8 @@ df=merge(df, df3, by.x="ID", by.y="input_name");
 df=merge(df, df4, by.x="ID", by.y="ID");
 nrow(df);
 
+df$score11=0-df$pseudoenergy/df$input_atoms;
+
 targets=sort(union(df$target, df$target));
 
 per_target_max_cadscores=c();
@@ -100,6 +102,9 @@ for(target in targets)
 	df$completeness[sel]=df$input_atoms[sel]/median(df$input_atoms[sel]);
 }
 df=df[which(df$completeness>0.9),];
+nrow(df);
+
+df=df[which(df$iface_clash_score<0.4),];
 nrow(df);
 
 plot(df$iface_cadscore, df$score1);
@@ -123,6 +128,8 @@ per_target_sel7_cadscores=c();
 per_target_sel8_cadscores=c();
 per_target_sel9_cadscores=c();
 per_target_sel10_cadscores=c();
+per_target_sel11_cadscores=c();
+per_target_sel12_cadscores=c();
 for(target in targets)
 {
 	sdf=df[which(df$target==target),];
@@ -137,6 +144,8 @@ for(target in targets)
 	per_target_sel8_cadscores=c(per_target_sel8_cadscores, sdf$iface_cadscore[order(0-sdf$score8)[1]]);
 	per_target_sel9_cadscores=c(per_target_sel9_cadscores, sdf$iface_cadscore[order(0-sdf$score9)[1]]);
 	per_target_sel10_cadscores=c(per_target_sel10_cadscores, sdf$iface_cadscore[order(0-sdf$score10)[1]]);
+	per_target_sel11_cadscores=c(per_target_sel11_cadscores, sdf$iface_cadscore[order(0-sdf$score11)[1]]);
+	per_target_sel12_cadscores=c(per_target_sel12_cadscores, sdf$iface_cadscore[order(0-sdf$score12)[1]]);
 }
 
 median(per_target_sel0_cadscores);
@@ -150,6 +159,8 @@ median(per_target_sel7_cadscores);
 median(per_target_sel8_cadscores);
 median(per_target_sel9_cadscores);
 median(per_target_sel10_cadscores);
+median(per_target_sel11_cadscores);
+median(per_target_sel12_cadscores);
 
 mean(per_target_sel0_cadscores);
 mean(per_target_sel1_cadscores);
@@ -162,6 +173,8 @@ mean(per_target_sel7_cadscores);
 mean(per_target_sel8_cadscores);
 mean(per_target_sel9_cadscores);
 mean(per_target_sel10_cadscores);
+mean(per_target_sel11_cadscores);
+mean(per_target_sel12_cadscores);
 
 EOF
 
