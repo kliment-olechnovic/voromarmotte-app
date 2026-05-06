@@ -310,11 +310,11 @@ then
 				> "$TMPLDIR/slurm_job_ids"
 				
 				sleep 1
-				REMAINING_SLURM_JOBS="$(squeue | grep -f "$TMPLDIR/slurm_job_ids" | wc -l)"
+				REMAINING_SLURM_JOBS="$(squeue -h -o '%A' | grep -w -f "$TMPLDIR/slurm_job_ids" | wc -l)"
 				while [ "$REMAINING_SLURM_JOBS" -gt "0" ]
 				do
 					sleep 1
-					REMAINING_SLURM_JOBS="$(squeue | grep -f "$TMPLDIR/slurm_job_ids" | wc -l)"
+					REMAINING_SLURM_JOBS="$(squeue -h -o '%A' | grep -w -f "$TMPLDIR/slurm_job_ids" | wc -l)"
 				done
 				
 				find "$TMPLDIR/slurm_logs/" -type f -not -empty | xargs -L 1 cat >&2
@@ -325,7 +325,27 @@ then
 	find "$TMPLDIR/children_tables" -type f -not -empty \
 	| sort \
 	| xargs -L 1 cat \
-	| awk '{if(NR==1 || $1!="ID") print $0}' \
+	> "$TMPLDIR/concatenated_children_tables"
+	
+	cat "$TMPLDIR/concatenated_children_tables" | awk '{if($1=="ID"){print $0}}' | sed 's/\s\+/ /g' | uniq | sort | uniq > "$TMPLDIR/unique_headers"
+	
+	NUM_OF_IFACE_HEADERS="$(cat "$TMPLDIR/unique_headers" | grep -w 'ic_area_pseudoenergy' | wc -l)"
+	
+	{
+		if [ "$NUM_OF_IFACE_HEADERS" -gt "0" ]
+		then
+			cat "$TMPLDIR/unique_headers" | grep -w 'ic_area_pseudoenergy' | head -1
+			
+			cat "$TMPLDIR/concatenated_children_tables" \
+			| awk '{if($1!="ID"){print $0 " 0 0 0 0 0 0"}}' \
+			| awk '{print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 " " $9 " " $10 " " $11}'
+		else
+			cat "$TMPLDIR/unique_headers" | head -1
+			
+			cat "$TMPLDIR/concatenated_children_tables" \
+			| awk '{if($1!="ID"){print $0}}'
+		fi
+	} \
 	| ${VOROMARMOTTE_ROOT_DIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns pseudoenergy -multipliers -1 -tolerances 0.0');" \
 	| column -t \
 	> "$TMPLDIR/full_output_table"
