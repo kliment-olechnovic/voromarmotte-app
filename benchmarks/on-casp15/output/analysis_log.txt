@@ -1,0 +1,170 @@
+
+R version 4.3.3 (2024-02-29) -- "Angel Food Cake"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> df1=read.table("global_scores.txt", header=TRUE, stringsAsFactors=FALSE);
+> df1=df1[which(df1$ic_fraction>0.0),];
+> 
+> df1$score0=0-df1$ic_area_total;
+> 
+> df1$score1=df1$ic_area_pseudoenergy/df1$ic_area_total;
+> df1$score1=(tanh(0-df1$score1-0.6)+1)/2;
+> 
+> df1$score2=df1$pseudoenergy/df1$area;
+> df1$score2=(tanh(0-df1$score2-0.6)+1)/2;
+> 
+> df1$score3=df1$ic_best_core_area/df1$ic_area_total;
+> 
+> df1$score4=0-df1$ic_area_pseudoenergy;
+> 
+> df1$score5=0-df1$pseudoenergy;
+> 
+> df2=read.table("cadscores.tsv", header=TRUE, stringsAsFactors=FALSE);
+> 
+> df3=read.table("global_scores_vorochipmunk.txt", header=TRUE, stringsAsFactors=FALSE);
+> 
+> df3$score6=0-df3$iface_pseudoenergy;
+> 
+> df3$score7=0-df3$iface_pseudoenergy/df3$iface_area;
+> 
+> df4=read.table("global_scores_voroif-gnn-v2.txt", header=TRUE, stringsAsFactors=FALSE);
+> 
+> df4$score8=df4$pgoodness;
+> 
+> df4$score9=df4$pgoodness_average;
+> 
+> df4$score10=df4$residue_pcadscore;
+> 
+> 
+> nrow(df1);
+[1] 6325
+> nrow(df2);
+[1] 10252
+> nrow(df3);
+[1] 6325
+> nrow(df4);
+[1] 6291
+> df=merge(df1, df2, by.x="ID", by.y="input_name");
+> df=merge(df, df3, by.x="ID", by.y="input_name");
+> df=merge(df, df4, by.x="ID", by.y="ID");
+> nrow(df);
+[1] 6291
+> 
+> targets=sort(union(df$target, df$target));
+> 
+> per_target_max_cadscores=c();
+> for(target in targets)
++ {
++ 	per_target_max_cadscores=c(per_target_max_cadscores, max(df$iface_cadscore[which(df$target==target)]));
++ }
+> targets=targets[which(per_target_max_cadscores>0.5)];
+> 
+> df$completeness=1;
+> for(target in targets)
++ {
++ 	sel=which(df$target==target);
++ 	df$completeness[sel]=df$input_atoms[sel]/median(df$input_atoms[sel]);
++ }
+> df=df[which(df$completeness>0.9),];
+> nrow(df);
+[1] 6254
+> 
+> plot(df$iface_cadscore, df$score1);
+> plot(df$iface_cadscore, df$score2);
+> plot(df$iface_cadscore, df$score3);
+> plot(df$iface_cadscore, df$score4);
+> plot(df$iface_cadscore, df$score5);
+> plot(df$iface_cadscore, df$score6);
+> plot(df$iface_cadscore, df$score7);
+> plot(df$iface_cadscore, df$score8);
+> plot(df$iface_cadscore, df$score9);
+> 
+> per_target_sel0_cadscores=c();
+> per_target_sel1_cadscores=c();
+> per_target_sel2_cadscores=c();
+> per_target_sel3_cadscores=c();
+> per_target_sel4_cadscores=c();
+> per_target_sel5_cadscores=c();
+> per_target_sel6_cadscores=c();
+> per_target_sel7_cadscores=c();
+> per_target_sel8_cadscores=c();
+> per_target_sel9_cadscores=c();
+> per_target_sel10_cadscores=c();
+> for(target in targets)
++ {
++ 	sdf=df[which(df$target==target),];
++ 	per_target_sel0_cadscores=c(per_target_sel0_cadscores, sdf$iface_cadscore[order(0-sdf$score0)[1]]);
++ 	per_target_sel1_cadscores=c(per_target_sel1_cadscores, sdf$iface_cadscore[order(0-sdf$score1)[1]]);
++ 	per_target_sel2_cadscores=c(per_target_sel2_cadscores, sdf$iface_cadscore[order(0-sdf$score2)[1]]);
++ 	per_target_sel3_cadscores=c(per_target_sel3_cadscores, sdf$iface_cadscore[order(0-sdf$score3)[1]]);
++ 	per_target_sel4_cadscores=c(per_target_sel4_cadscores, sdf$iface_cadscore[order(0-sdf$score4)[1]]);
++ 	per_target_sel5_cadscores=c(per_target_sel5_cadscores, sdf$iface_cadscore[order(0-sdf$score5)[1]]);
++ 	per_target_sel6_cadscores=c(per_target_sel6_cadscores, sdf$iface_cadscore[order(0-sdf$score6)[1]]);
++ 	per_target_sel7_cadscores=c(per_target_sel7_cadscores, sdf$iface_cadscore[order(0-sdf$score7)[1]]);
++ 	per_target_sel8_cadscores=c(per_target_sel8_cadscores, sdf$iface_cadscore[order(0-sdf$score8)[1]]);
++ 	per_target_sel9_cadscores=c(per_target_sel9_cadscores, sdf$iface_cadscore[order(0-sdf$score9)[1]]);
++ 	per_target_sel10_cadscores=c(per_target_sel10_cadscores, sdf$iface_cadscore[order(0-sdf$score10)[1]]);
++ }
+> 
+> median(per_target_sel0_cadscores);
+[1] 0
+> median(per_target_sel1_cadscores);
+[1] 0.559465
+> median(per_target_sel2_cadscores);
+[1] 0.654415
+> median(per_target_sel3_cadscores);
+[1] 0.557645
+> median(per_target_sel4_cadscores);
+[1] 0.48813
+> median(per_target_sel5_cadscores);
+[1] 0.613085
+> median(per_target_sel6_cadscores);
+[1] 0.38445
+> median(per_target_sel7_cadscores);
+[1] 0.432395
+> median(per_target_sel8_cadscores);
+[1] 0.508595
+> median(per_target_sel9_cadscores);
+[1] 0.554075
+> median(per_target_sel10_cadscores);
+[1] 0.559465
+> 
+> mean(per_target_sel0_cadscores);
+[1] 0.0154545
+> mean(per_target_sel1_cadscores);
+[1] 0.515373
+> mean(per_target_sel2_cadscores);
+[1] 0.6119275
+> mean(per_target_sel3_cadscores);
+[1] 0.472337
+> mean(per_target_sel4_cadscores);
+[1] 0.426198
+> mean(per_target_sel5_cadscores);
+[1] 0.5495345
+> mean(per_target_sel6_cadscores);
+[1] 0.3489685
+> mean(per_target_sel7_cadscores);
+[1] 0.408712
+> mean(per_target_sel8_cadscores);
+[1] 0.3675335
+> mean(per_target_sel9_cadscores);
+[1] 0.4290195
+> mean(per_target_sel10_cadscores);
+[1] 0.4842595
+> 
+> 
