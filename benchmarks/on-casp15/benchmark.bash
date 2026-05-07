@@ -22,6 +22,11 @@ cat "./output/used_input_files.txt" \
 cat "./output/used_input_files.txt" \
 | ${HOME}/git/vorochipmunk-app/vorochipmunk -i _list --processors 4 --output-table-file "./output/global_scores_vorochipmunk.txt"
 
+[ -s "./output/global_scores_voromqa_global.txt" ] || \
+cat "./output/used_input_files.txt" \
+| ${HOME}/git/ftdmp/core/voronota/expansion_js/voronota-js-only-global-voromqa --input _list --processors 8 --lt true \
+&> "./output/global_scores_voromqa_global.txt"
+
 if [ ! -s "./output/global_scores_voroif-gnn-v2.txt" ]
 then
 	NUM_OF_INPUTS="$(cat "./output/used_input_files.txt" | wc -l)"
