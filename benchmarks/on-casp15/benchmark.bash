@@ -79,14 +79,22 @@ df4$score9=df4$pgoodness_average;
 
 df4$score10=df4$residue_pcadscore;
 
+df5=read.table("global_scores_voromqa_global.txt", header=TRUE, stringsAsFactors=FALSE);
+
+df5$score21=df5$full_light_score;
+df5$score22=df5$full_dark_score;
 
 nrow(df1);
 nrow(df2);
 nrow(df3);
 nrow(df4);
+nrow(df5);
+
 df=merge(df1, df2, by.x="ID", by.y="input_name");
 df=merge(df, df3, by.x="ID", by.y="input_name");
 df=merge(df, df4, by.x="ID", by.y="ID");
+df=merge(df, df5, by.x="ID", by.y="input_name");
+
 nrow(df);
 
 df$score11=0-df$pseudoenergy/df$input_atoms;
@@ -135,6 +143,8 @@ per_target_sel9_cadscores=c();
 per_target_sel10_cadscores=c();
 per_target_sel11_cadscores=c();
 per_target_sel12_cadscores=c();
+per_target_sel21_cadscores=c();
+per_target_sel22_cadscores=c();
 for(target in targets)
 {
 	sdf=df[which(df$target==target),];
@@ -151,6 +161,8 @@ for(target in targets)
 	per_target_sel10_cadscores=c(per_target_sel10_cadscores, sdf$iface_cadscore[order(0-sdf$score10)[1]]);
 	per_target_sel11_cadscores=c(per_target_sel11_cadscores, sdf$iface_cadscore[order(0-sdf$score11)[1]]);
 	per_target_sel12_cadscores=c(per_target_sel12_cadscores, sdf$iface_cadscore[order(0-sdf$score12)[1]]);
+	per_target_sel21_cadscores=c(per_target_sel21_cadscores, sdf$iface_cadscore[order(0-sdf$score21)[1]]);
+	per_target_sel22_cadscores=c(per_target_sel22_cadscores, sdf$iface_cadscore[order(0-sdf$score22)[1]]);
 }
 
 median(per_target_sel0_cadscores);
@@ -166,6 +178,8 @@ median(per_target_sel9_cadscores);
 median(per_target_sel10_cadscores);
 median(per_target_sel11_cadscores);
 median(per_target_sel12_cadscores);
+median(per_target_sel21_cadscores);
+median(per_target_sel22_cadscores);
 
 mean(per_target_sel0_cadscores);
 mean(per_target_sel1_cadscores);
@@ -180,6 +194,8 @@ mean(per_target_sel9_cadscores);
 mean(per_target_sel10_cadscores);
 mean(per_target_sel11_cadscores);
 mean(per_target_sel12_cadscores);
+mean(per_target_sel21_cadscores);
+mean(per_target_sel22_cadscores);
 
 EOF
 

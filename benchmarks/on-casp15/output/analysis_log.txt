@@ -50,6 +50,10 @@ Type 'q()' to quit R.
 > 
 > df4$score10=df4$residue_pcadscore;
 > 
+> df5=read.table("global_scores_voromqa_global.txt", header=TRUE, stringsAsFactors=FALSE);
+> 
+> df5$score21=df5$full_light_score;
+> df5$score22=df5$full_dark_score;
 > 
 > nrow(df1);
 [1] 6325
@@ -59,9 +63,14 @@ Type 'q()' to quit R.
 [1] 6325
 > nrow(df4);
 [1] 6291
+> nrow(df5);
+[1] 6325
+> 
 > df=merge(df1, df2, by.x="ID", by.y="input_name");
 > df=merge(df, df3, by.x="ID", by.y="input_name");
 > df=merge(df, df4, by.x="ID", by.y="ID");
+> df=merge(df, df5, by.x="ID", by.y="input_name");
+> 
 > nrow(df);
 [1] 6291
 > 
@@ -113,6 +122,8 @@ Type 'q()' to quit R.
 > per_target_sel10_cadscores=c();
 > per_target_sel11_cadscores=c();
 > per_target_sel12_cadscores=c();
+> per_target_sel21_cadscores=c();
+> per_target_sel22_cadscores=c();
 > for(target in targets)
 + {
 + 	sdf=df[which(df$target==target),];
@@ -129,6 +140,8 @@ Type 'q()' to quit R.
 + 	per_target_sel10_cadscores=c(per_target_sel10_cadscores, sdf$iface_cadscore[order(0-sdf$score10)[1]]);
 + 	per_target_sel11_cadscores=c(per_target_sel11_cadscores, sdf$iface_cadscore[order(0-sdf$score11)[1]]);
 + 	per_target_sel12_cadscores=c(per_target_sel12_cadscores, sdf$iface_cadscore[order(0-sdf$score12)[1]]);
++ 	per_target_sel21_cadscores=c(per_target_sel21_cadscores, sdf$iface_cadscore[order(0-sdf$score21)[1]]);
++ 	per_target_sel22_cadscores=c(per_target_sel22_cadscores, sdf$iface_cadscore[order(0-sdf$score22)[1]]);
 + }
 > 
 > median(per_target_sel0_cadscores);
@@ -157,6 +170,10 @@ Type 'q()' to quit R.
 [1] 0.608615
 > median(per_target_sel12_cadscores);
 [1] 0.654415
+> median(per_target_sel21_cadscores);
+[1] 0.45446
+> median(per_target_sel22_cadscores);
+[1] 0.551835
 > 
 > mean(per_target_sel0_cadscores);
 [1] 0.0154545
@@ -184,5 +201,9 @@ Type 'q()' to quit R.
 [1] 0.5414305
 > mean(per_target_sel12_cadscores);
 [1] 0.615428
+> mean(per_target_sel21_cadscores);
+[1] 0.406069
+> mean(per_target_sel22_cadscores);
+[1] 0.458395
 > 
 > 
