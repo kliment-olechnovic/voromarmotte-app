@@ -1,4 +1,4 @@
-ID          modified                    pseudoenergy  area      best_core_pseudoenergy  best_core_area  ic_fraction
-target.pdb  rebuilt_mutated_any_55_GLY  -826.727      925.351   -848.852                915.662         1
-model2.pdb  rebuilt_mutated_any_55_GLY  53.086        890.135   -113.839                646.591         1
-model1.pdb  rebuilt_mutated_any_55_GLY  347.058       1005.653  -11.327                 736.545         1
+ID          modified                    pseudoenergy  area      best_core_pseudoenergy  best_core_area  ic_fraction  ic_area_pseudoenergy  ic_area_total  ic_best_core_pseudoenergy  ic_best_core_area
+target.pdb  rebuilt_mutated_any_55_GLY  -826.727      925.351   -848.852                915.662         1            -826.727              925.351        -848.852                   915.662
+model2.pdb  rebuilt_mutated_any_55_GLY  53.086        890.135   -113.839                646.591         1            53.086                890.135        -113.839                   646.591
+model1.pdb  rebuilt_mutated_any_55_GLY  347.058       1005.653  -11.327                 736.545         1            347.058               1005.653       -11.327                    736.545

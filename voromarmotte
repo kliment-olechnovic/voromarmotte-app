@@ -327,29 +327,16 @@ then
 	| xargs -L 1 cat \
 	> "$TMPLDIR/concatenated_children_tables"
 	
-	cat "$TMPLDIR/concatenated_children_tables" | awk '{if($1=="ID"){print $0}}' | sed 's/\s\+/ /g' | uniq | sort | uniq > "$TMPLDIR/unique_headers"
-	
-	NUM_OF_IFACE_HEADERS="$(cat "$TMPLDIR/unique_headers" | grep -w 'ic_area_pseudoenergy' | wc -l)"
-	
 	{
-		if [ "$NUM_OF_IFACE_HEADERS" -gt "0" ]
-		then
-			cat "$TMPLDIR/unique_headers" | grep -w 'ic_area_pseudoenergy' | head -1
-			
-			cat "$TMPLDIR/concatenated_children_tables" \
-			| awk '{if($1!="ID"){print $0 " 0 0 0 0 0 0"}}' \
-			| awk '{print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $8 " " $9 " " $10 " " $11}'
-		else
-			cat "$TMPLDIR/unique_headers" | head -1
-			
-			cat "$TMPLDIR/concatenated_children_tables" \
-			| awk '{if($1!="ID"){print $0}}'
-		fi
+		echo "ID modified pseudoenergy area best_core_pseudoenergy best_core_area ic_fraction ic_area_pseudoenergy ic_area_total ic_best_core_pseudoenergy ic_best_core_area"
+		
+		cat "$TMPLDIR/concatenated_children_tables" \
+		| awk '{if($1!="ID"){if($7==1.0){print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " $3 " " $4 " " $5 " " $6}else if($7==0.0){print $1 " " $2 " " $3 " " $4 " " $5 " " $6 " " $7 " " 0 " " 0 " " 0 " " 0} else {print $0}}}'
 	} \
 	| ${VOROMARMOTTE_ROOT_DIR}/tools/voronota-js --no-setup-defaults "js:voronota_tournament_sort('-input-file _stdin -output-file _stdout -columns pseudoenergy -multipliers -1 -tolerances 0.0');" \
 	| column -t \
 	> "$TMPLDIR/full_output_table"
-	
+		
 	if [ -n "$OUTPUT_TABLE_FILE" ] && [ "$OUTPUT_TABLE_FILE" != "_stdout" ]
 	then
 		mkdir -p "$(dirname "$OUTPUT_TABLE_FILE")"

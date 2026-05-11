@@ -1,21 +1,21 @@
-ID          modified                  pseudoenergy  area     best_core_pseudoenergy  best_core_area  ic_fraction
-model2.pdb  rebuilt_mutated_A_48_ILE  -309.319      913.012  -462.265                721.922         1
-model2.pdb  rebuilt                   -256.453      920.066  -413.658                676.523         1
-model2.pdb  rebuilt_mutated_A_48_THR  -206.21       922.91   -365.424                679.367         1
-model2.pdb  rebuilt_mutated_A_48_PHE  -177.032      909.741  -328.959                826.714         1
-model2.pdb  rebuilt_mutated_A_48_ASP  -171.031      924.312  -338.458                680.769         1
-model2.pdb  rebuilt_mutated_A_48_ASN  -166.257      925.448  -336.354                681.905         1
-model2.pdb  rebuilt_mutated_A_48_TYR  -165.165      909.695  -317.325                826.669         1
-model2.pdb  rebuilt_mutated_A_48_SER  -123.896      919.62   -299.479                676.076         1
-model2.pdb  rebuilt_mutated_A_48_LEU  -112.191      912.997  -269.971                669.455         1
-model2.pdb  rebuilt_mutated_A_48_GLN  -98.205       905.452  -263.58                 714.362         1
-model2.pdb  rebuilt_mutated_A_48_CYS  -96.616       925.116  -269.092                681.573         1
-model2.pdb  rebuilt_mutated_A_48_PRO  -83.356       910.325  -264.42                 666.782         1
-model2.pdb  rebuilt_mutated_A_48_ALA  -81.028       915.748  -261.021                672.205         1
-model2.pdb  rebuilt_mutated_A_48_HIS  -78.108       911.028  -240.098                666.435         1
-model2.pdb  rebuilt_mutated_A_48_MET  -55.066       922.165  -214.728                731.075         1
-model2.pdb  rebuilt_mutated_A_48_TRP  -25.994       905.989  -202.744                714.479         1
-model2.pdb  rebuilt_mutated_A_48_ARG  -20.295       911.977  -204.223                721.584         1
-model2.pdb  rebuilt_mutated_A_48_GLU  1.525         917.525  -169.063                726.435         1
-model2.pdb  rebuilt_mutated_A_48_GLY  32.641        904.458  -158.89                 660.915         1
-model2.pdb  rebuilt_mutated_A_48_LYS  171.67        914.561  -27.304                 723.47          1
+ID          modified                  pseudoenergy  area     best_core_pseudoenergy  best_core_area  ic_fraction  ic_area_pseudoenergy  ic_area_total  ic_best_core_pseudoenergy  ic_best_core_area
+model2.pdb  rebuilt_mutated_A_48_ILE  -309.319      913.012  -462.265                721.922         1            -309.319              913.012        -462.265                   721.922
+model2.pdb  rebuilt                   -256.453      920.066  -413.658                676.523         1            -256.453              920.066        -413.658                   676.523
+model2.pdb  rebuilt_mutated_A_48_THR  -206.21       922.91   -365.424                679.367         1            -206.21               922.91         -365.424                   679.367
+model2.pdb  rebuilt_mutated_A_48_PHE  -177.032      909.741  -328.959                826.714         1            -177.032              909.741        -328.959                   826.714
+model2.pdb  rebuilt_mutated_A_48_ASP  -171.031      924.312  -338.458                680.769         1            -171.031              924.312        -338.458                   680.769
+model2.pdb  rebuilt_mutated_A_48_ASN  -166.257      925.448  -336.354                681.905         1            -166.257              925.448        -336.354                   681.905
+model2.pdb  rebuilt_mutated_A_48_TYR  -165.165      909.695  -317.325                826.669         1            -165.165              909.695        -317.325                   826.669
+model2.pdb  rebuilt_mutated_A_48_SER  -123.896      919.62   -299.479                676.076         1            -123.896              919.62         -299.479                   676.076
+model2.pdb  rebuilt_mutated_A_48_LEU  -112.191      912.997  -269.971                669.455         1            -112.191              912.997        -269.971                   669.455
+model2.pdb  rebuilt_mutated_A_48_GLN  -98.205       905.452  -263.58                 714.362         1            -98.205               905.452        -263.58                    714.362
+model2.pdb  rebuilt_mutated_A_48_CYS  -96.616       925.116  -269.092                681.573         1            -96.616               925.116        -269.092                   681.573
+model2.pdb  rebuilt_mutated_A_48_PRO  -83.356       910.325  -264.42                 666.782         1            -83.356               910.325        -264.42                    666.782
+model2.pdb  rebuilt_mutated_A_48_ALA  -81.028       915.748  -261.021                672.205         1            -81.028               915.748        -261.021                   672.205
+model2.pdb  rebuilt_mutated_A_48_HIS  -78.108       911.028  -240.098                666.435         1            -78.108               911.028        -240.098                   666.435
+model2.pdb  rebuilt_mutated_A_48_MET  -55.066       922.165  -214.728                731.075         1            -55.066               922.165        -214.728                   731.075
+model2.pdb  rebuilt_mutated_A_48_TRP  -25.994       905.989  -202.744                714.479         1            -25.994               905.989        -202.744                   714.479
+model2.pdb  rebuilt_mutated_A_48_ARG  -20.295       911.977  -204.223                721.584         1            -20.295               911.977        -204.223                   721.584
+model2.pdb  rebuilt_mutated_A_48_GLU  1.525         917.525  -169.063                726.435         1            1.525                 917.525        -169.063                   726.435
+model2.pdb  rebuilt_mutated_A_48_GLY  32.641        904.458  -158.89                 660.915         1            32.641                904.458        -158.89                    660.915
+model2.pdb  rebuilt_mutated_A_48_LYS  171.67        914.561  -27.304                 723.47          1            171.67                914.561        -27.304                    723.47
