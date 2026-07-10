@@ -6,7 +6,7 @@ cat << 'EOF' >&2
 This script needs exactly three parameters: "input_table" "inter_correlation_coef" "min_persistence"
 
 Usage example:
-  gprob.bash "table.tsv" 0.8 0.7
+  gpprob.bash "table.tsv" 0.8 0.7
 
 EOF
 	exit 1
