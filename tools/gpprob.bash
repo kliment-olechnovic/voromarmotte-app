@@ -1,21 +1,20 @@
 #!/bin/bash
 
-if [ "$#" -ne 4 ]
+if [ "$#" -ne 3 ]
 then
 cat << 'EOF' >&2
-This script needs exactly four parameters: "input_table" "variance_scaling" "variance_addition" "min_persistence"
+This script needs exactly three parameters: "input_table" "inter_correlation_coef" "min_persistence"
 
 Usage example:
-  gprob.bash "table.tsv" 1.0 0.05 0.5
+  gprob.bash "table.tsv" 0.8 0.5
 
 EOF
 	exit 1
 fi
 
 TABLEFILE="$1"
-VARSCALING="$2"
-VARADDITION="$3"
-THRESHOLD="$4"
+INTERCORCOEF="$2"
+THRESHOLD="$3"
 
 if [ ! -s "$TABLEFILE" ]
 then
@@ -26,13 +25,12 @@ fi
 readonly TMPLDIR=$(mktemp -d)
 trap "rm -r $TMPLDIR" EXIT
 
-R --vanilla --args "$TABLEFILE" "$VARSCALING" "$VARADDITION" "$THRESHOLD" "${TMPLDIR}/summary" << 'EOF' > /dev/null
+R --vanilla --args "$TABLEFILE" "$INTERCORCOEF" "$THRESHOLD" "${TMPLDIR}/summary" << 'EOF' > /dev/null
 args=commandArgs(TRUE);
 infile=args[1];
-varscaling=as.numeric(args[2]);
-varaddition=as.numeric(args[3]);
-threshold=as.numeric(args[4]);
-outfile=args[5];
+intercorcoef=as.numeric(args[2]);
+threshold=as.numeric(args[3]);
+outfile=args[4];
 
 df=read.table(infile, header=TRUE, stringsAsFactors=FALSE);
 per_contact_probabilies=df$predicted_probability_to_persist;
@@ -40,7 +38,7 @@ per_contact_areas=df$area/sum(df$area);
 
 dist_mean=sum(per_contact_areas*per_contact_probabilies);
 dist_var=sum((per_contact_areas^2)*per_contact_probabilies*(1-per_contact_probabilies));
-dist_var=dist_var*varscaling+varaddition;
+dist_var=(1-intercorcoef)*dist_var+intercorcoef*dist_mean*(1-dist_mean);
 
 dist_alpha_plus_beta=dist_mean*(1-dist_mean)/dist_var-1;
 dist_alpha=dist_mean*dist_alpha_plus_beta;
