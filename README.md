@@ -6,8 +6,9 @@ in an ensemble of multiple conformations of the same protein.
 In other words, VoroMarmotte predicts contact area heterogeneity from a single input structure.
 
 VoroMarmotte is developed as one of the results of the MARMOTTTE project.
-The details of the method are to be published soon.
-This repository provides an alpha version of VoroMarmotte app.
+The method is described in the preprint:
+
+1. K. Olechnovič and S. Grudinin, “VoroMarmotte: predicting ensemble-derived protein contact stability from a single structure”, Oct. 09, 2026, Zenodo. doi: [10.5281/zenodo.23267194](https://doi.org/10.5281/zenodo.23267194).
 
 VoroMarmotte is developed by Kliment Olechnovic ([www.kliment.lt](https://www.kliment.lt)).
 
